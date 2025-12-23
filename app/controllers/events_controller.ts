@@ -1,10 +1,12 @@
-import type { HttpContext } from '@adonisjs/core/http'
-import { st } from '#services/postgis_service' // Notre instance Knex-PostGIS
-import CopernicusService from '#services/copernicus_service'
+import { DateTime } from 'luxon'
 import Event from '#models/event'
 import Source from '#models/source'
 import AlertType from '#models/alert_type'
-import { DateTime } from 'luxon'
+import db from '@adonisjs/lucid/services/db'
+import type { HttpContext } from '@adonisjs/core/http'
+import CopernicusService from '#services/copernicus_service'
+import { searchEventValidator } from '#validators/search_event'
+import { st } from '#services/postgis_service' // Notre instance Knex-PostGIS
 
 export default class EventsController {
   public async ingest({ response }: HttpContext) {
@@ -44,5 +46,48 @@ export default class EventsController {
     }
 
     return response.ok({ message: `${count} événements ingérés avec succès.` })
+  }
+
+  public async nearby({ request, response }: HttpContext) {
+    const { lat, lon, radius } = await request.validateUsing(searchEventValidator)
+    const searchRadius = radius || 50000
+
+    // 1. Récupérer le client Knex brut depuis Lucid
+    const knex = db.connection().getWriteClient()
+
+    // 2. Création du point utilisateur reutilisable pour la distance et le filtrage
+    const userLocation = st.geomFromText(`POINT(${lon} ${lat})`, 4326)
+
+    const events = await db
+      .from('events')
+      .join('alert_types', 'events.alert_type_id', 'alert_types.id')
+      .select(
+        'events.id',
+        'events.title',
+        'events.event_time',
+        'alert_types.label',
+        'alert_types.color',
+        'alert_types.icon'
+      )
+      // 3. Calcul de la distance entre l'événement et l'utilisateur
+      .select(
+        st
+          .distance(knex.raw('events.geom::geography'), knex.raw('?::geography', [userLocation]))
+          .as('distance_meters')
+      )
+
+      .select(st.asGeoJSON('events.geom').as('geom'))
+
+      // 4. Filtrage par distance
+      .where(
+        st.dwithin(
+          knex.raw('events.geom::geography'),
+          knex.raw('?::geography', [userLocation]),
+          searchRadius
+        )
+      )
+      .orderBy('distance_meters', 'asc')
+
+    return response.ok(events)
   }
 }
