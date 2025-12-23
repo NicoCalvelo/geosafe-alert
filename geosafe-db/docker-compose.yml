@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    platform: linux/amd64
+    build: .
+    container_name: geosafe_db_custom
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: geosafe
+    volumes:
+      - pg_data_custom:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: geosafe_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'admin@geosafe.com'
+      PGADMIN_DEFAULT_PASSWORD: 'admin'
+    ports:
+      - '8080:80'
+    depends_on:
+      - db
+
+volumes:
+  pg_data_custom:
