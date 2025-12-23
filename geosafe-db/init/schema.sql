@@ -59,7 +59,7 @@ CREATE OR REPLACE FUNCTION events_update_bbox()
 RETURNS trigger AS $$
 BEGIN
     IF NEW.geom IS NOT NULL THEN
-        NEW.bbox = ST_Box2D(NEW.geom);
+        NEW.bbox = Box2D(NEW.geom);
     ELSE
         NEW.bbox = NULL;
     END IF;
