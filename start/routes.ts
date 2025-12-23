@@ -6,4 +6,7 @@ const EventsController = () => import('#controllers/events_controller')
 
 router.get('/', [HomeController, 'index'])
 
-router.get('/events', [EventsController, 'index'])
+router.group(() => {
+  // Route pour déclencher l'ingestion (souvent protégée, mais public pour le TP)
+  router.post('/ingest', [EventsController, 'ingest'])
+}).prefix('api')

@@ -1,8 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Source from '#models/source'
 import AlertType from '#models/alert_type'
+import { beforeSave } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 
 export default class Event extends BaseModel {
   @column({ isPrimary: true })
@@ -39,7 +40,7 @@ export default class Event extends BaseModel {
   declare receivedAt: DateTime
 
   // DONNÉES SPATIALES & BRUTES
-  
+
   // Geometry(Geometry, 4326)
   @column()
   declare geom: any
@@ -58,4 +59,12 @@ export default class Event extends BaseModel {
 
   @belongsTo(() => AlertType)
   declare alertType: BelongsTo<typeof AlertType>
+
+  @beforeSave()
+  public static async ensureReceivedAt(event: Event) {
+    // on remplace les "_" par des espaces dans le titre s'il est défini
+    if (event.title) {
+      event.title = event.title.replace(/_/g, ' ')
+    }
+  }
 }
