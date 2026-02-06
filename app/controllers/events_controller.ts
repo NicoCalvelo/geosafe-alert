@@ -50,7 +50,7 @@ export default class EventsController {
 
   public async nearby({ request, response }: HttpContext) {
     const { lat, lon, radius } = await request.validateUsing(searchEventValidator)
-    const searchRadius = radius || 50000
+    const searchRadius = radius || 5000
 
     // 1. Récupérer le client Knex brut depuis Lucid
     const knex = db.connection().getWriteClient()
