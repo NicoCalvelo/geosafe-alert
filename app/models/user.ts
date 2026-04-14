@@ -19,8 +19,11 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare email: string
 
-  @column({ serializeAs: null })
+  @column({ serializeAs: null, columnName: 'password_hash' })
   declare password: string
+
+  @column()
+  declare role: string
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
