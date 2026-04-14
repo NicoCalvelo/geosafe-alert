@@ -43,6 +43,7 @@ CREATE TABLE events (
     level           smallint,
     status          text,
     event_time      timestamptz,
+    end_time        timestamptz,
     received_at     timestamptz DEFAULT now(),
     geom            geometry(Geometry, 4326),
     bbox            box2d,
@@ -99,3 +100,17 @@ CREATE TABLE user_searches (
 );
 
 CREATE INDEX idx_user_searches_bbox_gist ON user_searches USING GIST (bbox);
+
+-- 8. TABLE : auth_access_tokens
+CREATE TABLE auth_access_tokens (
+    id              serial PRIMARY KEY,
+    tokenable_id    uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type            text NOT NULL,
+    name            text,
+    hash            text NOT NULL,
+    abilities       text NOT NULL,
+    created_at      timestamptz,
+    updated_at      timestamptz,
+    last_used_at    timestamptz,
+    expires_at      timestamptz
+);

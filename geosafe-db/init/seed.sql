@@ -15,7 +15,8 @@ INSERT INTO alert_types (code, label, icon, color)
 VALUES
 ('fire', 'Wildfire', 'fire', '#ff4500'),
 ('flood', 'Flood', 'water', '#1e90ff'),
-('earthquake', 'Earthquake', 'activity', '#ffa500');
+('earthquake', 'Earthquake', 'activity', '#ffa500'),
+('storm', 'Storm', 'cloud-lightning', '#8b00ff');
 
 -- 4. CITIES
 INSERT INTO cities (name, admin, country, geom, population)
@@ -36,8 +37,8 @@ VALUES
 );
 
 -- 5. EVENTS
--- Note: Les IDs de sources et alert_types (1, 2, 3) correspondent à l'ordre d'insertion ci-dessus (Serial)
-INSERT INTO events (source_id, external_id, alert_type_id, title, description, level, status, event_time, geom, raw)
+-- Note: Les IDs de sources et alert_types (1, 2, 3, 4) correspondent à l'ordre d'insertion ci-dessus (Serial)
+INSERT INTO events (source_id, external_id, alert_type_id, title, description, level, status, event_time, end_time, geom, raw)
 VALUES
 (
     1, -- copernicus
@@ -48,6 +49,7 @@ VALUES
     4,
     'active',
     now() - interval '2 hours',
+    NULL,
     ST_GeomFromText('POLYGON((5.30 43.25, 5.45 43.25, 5.45 43.35, 5.30 43.35, 5.30 43.25))', 4326),
     '{"confidence":0.92,"sensor":"sentinel-2"}'
 ),
@@ -60,8 +62,22 @@ VALUES
     3,
     'ended',
     now() - interval '1 day',
+    now() - interval '23 hours',
     ST_GeomFromText('POINT(12.50 41.90)', 4326),
     '{"magnitude":5.1,"depth_km":10}'
+),
+(
+    1, -- copernicus
+    'COP-2024-003',
+    4, -- storm
+    'Storm over Barcelona',
+    'Severe thunderstorm with heavy rainfall detected',
+    3,
+    'ended',
+    now() - interval '6 hours',
+    now() - interval '2 hours',
+    ST_GeomFromText('POLYGON((2.10 41.35, 2.25 41.35, 2.25 41.45, 2.10 41.45, 2.10 41.35))', 4326),
+    '{"wind_speed_kmh":95,"rainfall_mm":42}'
 );
 
 -- 6. USER SEARCHES

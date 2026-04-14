@@ -5,7 +5,9 @@ import AlertType from '#models/alert_type'
 import db from '@adonisjs/lucid/services/db'
 import type { HttpContext } from '@adonisjs/core/http'
 import CopernicusService from '#services/copernicus_service'
-import { searchEventValidator } from '#validators/search_event'
+import CzmlService from '#services/czml_service'
+import { getWsServer } from '#providers/ws_provider'
+import { searchEventValidator, czmlQueryValidator } from '#validators/search_event'
 import { st } from '#services/postgis_service' // Notre instance Knex-PostGIS
 
 export default class EventsController {
@@ -13,36 +15,51 @@ export default class EventsController {
     const service = new CopernicusService()
     const data = await service.fetchLatestEvents()
 
-    // 1. Récupérer les Clés Étrangères (FK) existantes
-    // On utilise findByOrFail car si la source n'existe pas, on doit s'arrêter
+    // 1. Récupérer la source Copernicus
     const copernicusSource = await Source.findByOrFail('key', 'copernicus')
 
-    // Pour l'exemple, on dit que ce sont des 'fire' (ID 1 dans notre seed)
-    const fireType = await AlertType.findByOrFail('code', 'fire')
+    // 2. Pré-charger tous les types d'alerte pour le mapping dynamique
+    const allAlertTypes = await AlertType.all()
+    const alertTypeMap = new Map(allAlertTypes.map((at) => [at.code, at]))
 
     let count = 0
+    const ingested: Event[] = []
 
-    // 2. Boucle et Mapping
+    // 3. Boucle et Mapping
     for (const item of data) {
-      // updateOrCreate : On cherche par 'externalId', si trouvé on update, sinon on crée
-      await Event.updateOrCreate(
-        { externalId: item.Id }, // Critère de recherche unique
+      // Résolution dynamique du type d'alerte
+      const alertType = alertTypeMap.get(item.AlertCode)
+      if (!alertType) {
+        console.warn(`[ingest] Unknown alert code: ${item.AlertCode}, skipping ${item.Id}`)
+        continue
+      }
+
+      const event = await Event.updateOrCreate(
+        { externalId: item.Id },
         {
           sourceId: copernicusSource.id,
-          alertTypeId: fireType.id,
+          alertTypeId: alertType.id,
           title: item.Name,
-          status: 'active',
-          level: 3,
+          status: item.Status ?? 'active',
+          level: item.Level ?? 3,
           description: item.Description,
-          // Mapping de la date ISO string -> Luxon DateTime
           eventTime: DateTime.fromISO(item.ContentDate.Start),
-          // LA MAGIE SPATIALE : Conversion GeoJSON -> Geometry PostGIS
+          endTime: item.ContentDate.End ? DateTime.fromISO(item.ContentDate.End) : null,
           geom: st.geomFromGeoJSON(item.GeoFootprint),
-          // On garde la donnée brute
           raw: item,
         }
       )
+      ingested.push(event)
       count++
+    }
+
+    // 4. Émettre les nouvelles alertes via WebSocket
+    const io = getWsServer()
+    if (io && ingested.length > 0) {
+      io.of('/events').emit('new_alerts', {
+        count: ingested.length,
+        ids: ingested.map((e) => e.id),
+      })
     }
 
     return response.ok({ message: `${count} événements ingérés avec succès.` })
@@ -89,5 +106,49 @@ export default class EventsController {
       .orderBy('distance_meters', 'asc')
 
     return response.ok(events)
+  }
+
+  public async streamCzml({ request, response }: HttpContext) {
+    const { from, to, alertTypes } = await request.validateUsing(czmlQueryValidator)
+
+    const knex = db.connection().getWriteClient()
+
+    let query = db
+      .from('events')
+      .join('alert_types', 'events.alert_type_id', 'alert_types.id')
+      .select(
+        'events.id',
+        'events.title',
+        'events.description',
+        'events.event_time',
+        'events.end_time',
+        'events.status',
+        'events.level',
+        'alert_types.label',
+        'alert_types.color',
+        'alert_types.icon'
+      )
+      .select(st.asGeoJSON('events.geom').as('geojson'))
+      .select(knex.raw('ST_GeometryType(events.geom) as geom_type'))
+      .whereNotNull('events.geom')
+
+    if (from) {
+      query = query.where('events.event_time', '>=', from)
+    }
+    if (to) {
+      query = query.where('events.event_time', '<=', to)
+    }
+    if (alertTypes && alertTypes.length > 0) {
+      query = query.whereIn('alert_types.code', alertTypes)
+    }
+
+    query = query.orderBy('events.event_time', 'asc')
+
+    const events = await query
+
+    const czmlService = new CzmlService()
+    const czmlPayload = czmlService.buildFromEvents(events)
+
+    return response.json(czmlPayload)
   }
 }

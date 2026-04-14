@@ -35,6 +35,9 @@ export default class Event extends BaseModel {
   @column.dateTime()
   declare eventTime: DateTime | null
 
+  @column.dateTime()
+  declare endTime: DateTime | null
+
   // 'received_at' correspond au 'created_at' technique
   @column.dateTime({ autoCreate: true })
   declare receivedAt: DateTime

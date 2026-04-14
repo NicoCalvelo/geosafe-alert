@@ -8,3 +8,13 @@ export const searchEventValidator = vine.compile(
     radius: vine.number().min(0).optional()
   })
 )
+
+export const czmlQueryValidator = vine.compile(
+  vine.object({
+    // Plage temporelle (ISO 8601)
+    from: vine.string().optional(),
+    to: vine.string().optional(),
+    // Filtrage par codes de type d'alerte (ex: ['fire', 'flood'])
+    alertTypes: vine.array(vine.string()).optional(),
+  })
+)
