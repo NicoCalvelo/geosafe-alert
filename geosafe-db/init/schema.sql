@@ -8,8 +8,10 @@ CREATE TABLE users (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     email           text UNIQUE NOT NULL,
     password_hash   text NOT NULL,
+    full_name       text,
     role            text NOT NULL DEFAULT 'reader',
-    created_at      timestamptz DEFAULT now()
+    created_at      timestamptz DEFAULT now(),
+    updated_at      timestamptz DEFAULT now()
 );
 
 -- 3. TABLE : sources

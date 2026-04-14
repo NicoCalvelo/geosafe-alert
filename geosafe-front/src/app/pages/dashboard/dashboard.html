@@ -1,0 +1,35 @@
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <app-sidebar
+    [collapsed]="sidebarCollapsed()"
+    (toggled)="toggleSidebar()"
+    (filtersChanged)="onFiltersChanged()"
+  />
+
+  <!-- Main area -->
+  <div class="flex-1 relative">
+    <!-- Toggle sidebar button (visible when collapsed) -->
+    @if (sidebarCollapsed()) {
+      <button
+        (click)="toggleSidebar()"
+        class="absolute top-4 left-4 z-10 p-2 bg-gray-800/80 hover:bg-gray-700 text-white rounded-lg backdrop-blur-sm transition-colors"
+        title="Open sidebar"
+      >
+        ☰
+      </button>
+    }
+
+    <!-- Loading indicator -->
+    @if (loading()) {
+      <div class="absolute top-4 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-gray-800/80 text-white text-sm rounded-lg backdrop-blur-sm">
+        Loading alerts...
+      </div>
+    }
+
+    <!-- Cesium Globe -->
+    <app-cesium-viewer />
+  </div>
+</div>
+
+<!-- Toast notifications -->
+<app-toast />

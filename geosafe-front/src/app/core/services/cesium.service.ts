@@ -1,0 +1,76 @@
+import { Injectable, signal } from '@angular/core';
+import * as Cesium from 'cesium';
+import { environment } from '../../../environments/environment';
+
+@Injectable({ providedIn: 'root' })
+export class CesiumService {
+  private viewer: Cesium.Viewer | null = null;
+  private czmlDataSource: Cesium.CzmlDataSource | null = null;
+
+  readonly selectedEntity = signal<Cesium.Entity | null>(null);
+
+  initViewer(container: HTMLElement): Cesium.Viewer {
+    if (environment.cesiumIonToken) {
+      Cesium.Ion.defaultAccessToken = environment.cesiumIonToken;
+    }
+
+    this.viewer = new Cesium.Viewer(container, {
+      timeline: true,
+      animation: true,
+      sceneModePicker: true,
+      baseLayerPicker: true,
+      navigationHelpButton: false,
+      homeButton: true,
+      fullscreenButton: false,
+      geocoder: false,
+      infoBox: true,
+      selectionIndicator: true,
+    });
+
+    // Track entity selection
+    this.viewer.selectedEntityChanged.addEventListener((entity: Cesium.Entity | undefined) => {
+      this.selectedEntity.set(entity ?? null);
+    });
+
+    return this.viewer;
+  }
+
+  async loadCzml(czmlData: any[]): Promise<void> {
+    if (!this.viewer) return;
+
+    // Remove previous data source
+    if (this.czmlDataSource) {
+      this.viewer.dataSources.remove(this.czmlDataSource, true);
+    }
+
+    this.czmlDataSource = await Cesium.CzmlDataSource.load(czmlData);
+    await this.viewer.dataSources.add(this.czmlDataSource);
+
+    // Fly to the data extent
+    if (this.czmlDataSource.entities.values.length > 0) {
+      this.viewer.flyTo(this.czmlDataSource);
+    }
+  }
+
+  flyToEntity(entityId: string): void {
+    if (!this.viewer || !this.czmlDataSource) return;
+
+    const entity = this.czmlDataSource.entities.getById(entityId);
+    if (entity) {
+      this.viewer.flyTo(entity);
+      this.viewer.selectedEntity = entity;
+    }
+  }
+
+  getEntities(): Cesium.Entity[] {
+    return this.czmlDataSource?.entities.values ?? [];
+  }
+
+  destroy(): void {
+    if (this.viewer && !this.viewer.isDestroyed()) {
+      this.viewer.destroy();
+    }
+    this.viewer = null;
+    this.czmlDataSource = null;
+  }
+}

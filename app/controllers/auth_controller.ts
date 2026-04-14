@@ -9,7 +9,7 @@ export default class AuthController {
     const user = await User.create({
       email: data.email,
       password: data.password,
-      fullName: data.fullName ?? null,
+      full_name: data.fullName ?? null,
     })
 
     const token = await User.accessTokens.create(user)
@@ -18,7 +18,7 @@ export default class AuthController {
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
+        full_name: user.full_name,
         role: user.role,
       },
       token: token.toJSON(),
@@ -35,7 +35,7 @@ export default class AuthController {
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
+        full_name: user.full_name,
         role: user.role,
       },
       token: token.toJSON(),
@@ -57,7 +57,7 @@ export default class AuthController {
     return response.ok({
       id: user.id,
       email: user.email,
-      fullName: user.fullName,
+      full_name: user.full_name,
       role: user.role,
     })
   }

@@ -58,8 +58,8 @@ export interface EventRow {
   id: string
   title: string | null
   description: string | null
-  event_time: string | null
-  end_time: string | null
+  event_time: string | Date | null
+  end_time: string | Date | null
   status: string | null
   level: number | null
   label: string | null
@@ -116,16 +116,16 @@ export default class CzmlService {
 
     for (const e of events) {
       if (e.event_time) {
-        const t = DateTime.fromISO(e.event_time)
-        if (!earliest || t < earliest) earliest = t
+        const t = toDateTime(e.event_time)
+        if (t.isValid && (!earliest || t < earliest)) earliest = t
       }
       if (e.end_time) {
-        const t = DateTime.fromISO(e.end_time)
-        if (!latest || t > latest) latest = t
+        const t = toDateTime(e.end_time)
+        if (t.isValid && (!latest || t > latest)) latest = t
       } else if (e.event_time) {
         // Si pas de end_time, on utilise event_time + 24h comme borne max
-        const t = DateTime.fromISO(e.event_time).plus({ hours: 24 })
-        if (!latest || t > latest) latest = t
+        const t = toDateTime(e.event_time).plus({ hours: 24 })
+        if (t.isValid && (!latest || t > latest)) latest = t
       }
     }
 
@@ -146,13 +146,13 @@ export default class CzmlService {
 
     // Availability
     const eventStart = event.event_time
-      ? DateTime.fromISO(event.event_time).toISO()!
+      ? toDateTime(event.event_time).toISO()!
       : globalStop
     const eventEnd = event.end_time
-      ? DateTime.fromISO(event.end_time).toISO()!
+      ? toDateTime(event.end_time).toISO()!
       : event.status === 'active'
         ? globalStop
-        : DateTime.fromISO(event.event_time ?? globalStop)
+        : toDateTime(event.event_time ?? globalStop)
             .plus({ hours: 24 })
             .toISO()!
 
@@ -238,6 +238,16 @@ export default class CzmlService {
  * @param hex - Couleur au format '#rrggbb' ou '#rgb'
  * @param alpha - Valeur alpha 0-255 (défaut: 255)
  */
+/**
+ * Convertit une valeur date (Date JS ou string ISO) en DateTime Luxon.
+ */
+function toDateTime(value: string | Date): DateTime {
+  if (value instanceof Date) {
+    return DateTime.fromJSDate(value, { zone: 'utc' })
+  }
+  return DateTime.fromISO(value, { zone: 'utc' })
+}
+
 function hexToRgba(hex: string, alpha: number = 255): number[] {
   const clean = hex.replace('#', '')
   const fullHex =
