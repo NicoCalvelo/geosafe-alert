@@ -1,4 +1,4 @@
-import { Component, input, output, inject, computed } from '@angular/core';
+import { Component, input, output, inject, computed, signal } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { AlertsService } from '../../../core/services/alerts.service';
 import { CesiumService } from '../../../core/services/cesium.service';
@@ -36,6 +36,8 @@ export class Sidebar {
   });
 
   filtersChanged = output<void>();
+  synced = output<void>();
+  syncing = signal(false);
 
   onToggleFilter(code: string): void {
     this.alerts.toggleFilter(code);
@@ -52,6 +54,19 @@ export class Sidebar {
 
   onToggle(): void {
     this.toggled.emit();
+  }
+
+  async onSync(): Promise<void> {
+    if (this.syncing()) return;
+    this.syncing.set(true);
+    try {
+      await this.alerts.ingest();
+      this.synced.emit();
+    } catch (err) {
+      console.error('Sync failed:', err);
+    } finally {
+      this.syncing.set(false);
+    }
   }
 
   async onLogout(): Promise<void> {

@@ -9,6 +9,3 @@ LABEL maintainer="CALVELO Nicolas"
 ENV POSTGRES_USER=root
 ENV POSTGRES_PASSWORD=123456
 ENV POSTGRES_DB=geosafe
-
-# Copier scripts SQL dans le dossier d'initialisation de l'image
-COPY ./init/ /docker-entrypoint-initdb.d/

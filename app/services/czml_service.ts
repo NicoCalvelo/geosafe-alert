@@ -28,10 +28,10 @@ interface CzmlPacket {
     heightReference?: string
   }
   polygon?: {
-    positions: { cartographicDegrees: number[] }
+    positions: { cartographicDegrees: number[] } | { interval: string; cartographicDegrees: number[] }[]
     material: { solidColor: { color: { rgba: number[] } } }
     height: number
-    extrudedHeight?: number
+    extrudedHeight?: number | { interval: string; number: number }[]
     outline: boolean
     outlineColor?: { rgba: number[] }
     heightReference?: string
@@ -48,6 +48,13 @@ interface CzmlPacket {
     pixelOffset: { cartesian2: number[] }
     heightReference?: string
   }
+}
+
+export interface EventFrameRow {
+  frame_time: string | Date
+  geojson: string
+  geom_type?: string
+  properties?: Record<string, any>
 }
 
 /**
@@ -67,6 +74,7 @@ export interface EventRow {
   icon: string | null
   geojson: string // ST_AsGeoJSON result
   geom_type: string // ST_GeometryType result (e.g. 'ST_Point', 'ST_Polygon')
+  frames?: EventFrameRow[]
 }
 
 // ── Service ─────────────────────────────────────────────────
@@ -138,6 +146,8 @@ export default class CzmlService {
 
   /**
    * Convertit un événement (ligne jointe) en paquet CZML.
+   * Si des frames spatio-temporels sont disponibles, génère des intervals CZML
+   * pour animer le polygone dans le temps.
    */
   private eventToPacket(event: EventRow, globalStop: string): CzmlPacket | null {
     const geojson = JSON.parse(event.geojson)
@@ -191,23 +201,39 @@ export default class CzmlService {
         heightReference: 'CLAMP_TO_GROUND',
       }
     } else if (type === 'Polygon' || type === 'MultiPolygon') {
-      const ring =
-        type === 'MultiPolygon'
-          ? geojson.coordinates[0][0] // Premier polygone, anneau extérieur
-          : geojson.coordinates[0] // Anneau extérieur
-      const flatCoords: number[] = []
-      for (const coord of ring) {
-        flatCoords.push(coord[0], coord[1], coord[2] ?? 0)
-      }
+      // Si des frames sont disponibles, générer des intervals temporels
+      if (event.frames && event.frames.length > 1) {
+        const intervals = this.buildFrameIntervals(event.frames, eventEnd)
 
-      packet.polygon = {
-        positions: { cartographicDegrees: flatCoords },
-        material: { solidColor: { color: { rgba: rgbaFill } } },
-        height: 0,
-        extrudedHeight: (event.level ?? 1) * 500,
-        outline: true,
-        outlineColor: { rgba },
-        heightReference: 'CLAMP_TO_GROUND',
+        packet.polygon = {
+          positions: intervals,
+          material: { solidColor: { color: { rgba: rgbaFill } } },
+          height: 0,
+          extrudedHeight: (event.level ?? 1) * 500,
+          outline: true,
+          outlineColor: { rgba },
+          heightReference: 'CLAMP_TO_GROUND',
+        }
+      } else {
+        // Pas de frames → polygone statique (comportement original)
+        const ring =
+          type === 'MultiPolygon'
+            ? geojson.coordinates[0][0]
+            : geojson.coordinates[0]
+        const flatCoords: number[] = []
+        for (const coord of ring) {
+          flatCoords.push(coord[0], coord[1], coord[2] ?? 0)
+        }
+
+        packet.polygon = {
+          positions: { cartographicDegrees: flatCoords },
+          material: { solidColor: { color: { rgba: rgbaFill } } },
+          height: 0,
+          extrudedHeight: (event.level ?? 1) * 500,
+          outline: true,
+          outlineColor: { rgba },
+          heightReference: 'CLAMP_TO_GROUND',
+        }
       }
     } else {
       // Géométrie non supportée (LineString, etc.) — on ignore pour l'instant
@@ -215,6 +241,48 @@ export default class CzmlService {
     }
 
     return packet
+  }
+
+  /**
+   * Construit un tableau d'intervals CZML pour les positions du polygone.
+   * Chaque frame définit un interval temporel [frame_time, next_frame_time)
+   * avec ses propres cartographicDegrees.
+   */
+  private buildFrameIntervals(
+    frames: EventFrameRow[],
+    eventEnd: string
+  ): { interval: string; cartographicDegrees: number[] }[] {
+    const intervals: { interval: string; cartographicDegrees: number[] }[] = []
+
+    for (let i = 0; i < frames.length; i++) {
+      const frame = frames[i]
+      const frameGeojson = JSON.parse(frame.geojson)
+
+      const start = toDateTime(frame.frame_time).toISO()!
+      const end =
+        i < frames.length - 1
+          ? toDateTime(frames[i + 1].frame_time).toISO()!
+          : eventEnd
+
+      // Extraire les coordonnées du polygone
+      const gtype = frame.geom_type?.replace('ST_', '') ?? frameGeojson.type
+      const ring =
+        gtype === 'MultiPolygon'
+          ? frameGeojson.coordinates[0][0]
+          : frameGeojson.coordinates[0]
+
+      const flatCoords: number[] = []
+      for (const coord of ring) {
+        flatCoords.push(coord[0], coord[1], coord[2] ?? 0)
+      }
+
+      intervals.push({
+        interval: `${start}/${end}`,
+        cartographicDegrees: flatCoords,
+      })
+    }
+
+    return intervals
   }
 
   /**

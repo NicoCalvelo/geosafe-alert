@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import Event from '#models/event'
 import Source from '#models/source'
 import AlertType from '#models/alert_type'
+import EventFrame from '#models/event_frame'
 import db from '@adonisjs/lucid/services/db'
 import type { HttpContext } from '@adonisjs/core/http'
 import CopernicusService from '#services/copernicus_service'
@@ -49,6 +50,24 @@ export default class EventsController {
           raw: item,
         }
       )
+
+      // Insérer les frames spatio-temporels si présents
+      if (item.Frames && item.Frames.length > 0) {
+        // Supprimer les anciens frames pour cet event
+        await EventFrame.query().where('eventId', event.id).delete()
+
+        // Bulk insert des nouveaux frames
+        const knex = db.connection().getWriteClient()
+        const frameRows = item.Frames.map((frame) => ({
+          event_id: event.id,
+          frame_time: frame.Time,
+          geom: st.geomFromGeoJSON(frame.GeoFootprint),
+          properties: JSON.stringify(frame.Properties ?? {}),
+        }))
+
+        await knex('event_frames').insert(frameRows)
+      }
+
       ingested.push(event)
       count++
     }
@@ -146,8 +165,39 @@ export default class EventsController {
 
     const events = await query
 
+    // Récupérer les frames spatio-temporels pour les events retournés
+    const eventIds = events.map((e: any) => e.id)
+    let framesMap = new Map<string, any[]>()
+
+    if (eventIds.length > 0) {
+      const knex = db.connection().getWriteClient()
+      const frames = await db
+        .from('event_frames')
+        .select(
+          'event_id',
+          'frame_time',
+          'properties'
+        )
+        .select(st.asGeoJSON('geom').as('geojson'))
+        .select(knex.raw('ST_GeometryType(geom) as geom_type'))
+        .whereIn('event_id', eventIds)
+        .orderBy('frame_time', 'asc')
+
+      for (const frame of frames) {
+        const list = framesMap.get(frame.event_id) || []
+        list.push(frame)
+        framesMap.set(frame.event_id, list)
+      }
+    }
+
+    // Enrichir chaque event avec ses frames
+    const enrichedEvents = events.map((e: any) => ({
+      ...e,
+      frames: framesMap.get(e.id) || undefined,
+    }))
+
     const czmlService = new CzmlService()
-    const czmlPayload = czmlService.buildFromEvents(events)
+    const czmlPayload = czmlService.buildFromEvents(enrichedEvents)
 
     return response.json(czmlPayload)
   }

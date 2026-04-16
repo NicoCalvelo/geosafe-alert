@@ -50,6 +50,11 @@ export class Dashboard implements OnInit, OnDestroy {
     this.loadAlerts();
   }
 
+  onSynced(): void {
+    this.toast?.show('Sync complete — reloading alerts');
+    this.loadAlerts();
+  }
+
   private async loadAlerts(): Promise<void> {
     this.loading.set(true);
     try {

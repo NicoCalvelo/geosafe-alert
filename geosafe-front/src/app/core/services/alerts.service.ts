@@ -45,4 +45,10 @@ export class AlertsService {
   clearFilters(): void {
     this.activeFilters.set([]);
   }
+
+  async ingest(): Promise<{ message: string }> {
+    return firstValueFrom(
+      this.http.post<{ message: string }>(`${environment.apiUrl}/ingest`, {})
+    );
+  }
 }
