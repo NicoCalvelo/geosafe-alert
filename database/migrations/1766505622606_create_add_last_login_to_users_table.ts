@@ -4,10 +4,11 @@ export default class extends BaseSchema {
   protected tableName = 'users'
 
   async up() {
-    this.schema.alterTable(this.tableName, (table) => {
-      table.string('full_name').nullable()
-      table.timestamp('updated_at', { useTz: true }).nullable()
-    })
+    await this.db.rawQuery(`
+      ALTER TABLE "${this.tableName}"
+        ADD COLUMN IF NOT EXISTS full_name varchar(255),
+        ADD COLUMN IF NOT EXISTS updated_at timestamptz
+    `)
   }
 
   async down() {
