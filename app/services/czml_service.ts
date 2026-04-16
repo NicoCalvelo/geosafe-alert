@@ -29,7 +29,13 @@ interface CzmlPacket {
   }
   polygon?: {
     positions: { cartographicDegrees: number[] } | { interval: string; cartographicDegrees: number[] }[]
-    material: { solidColor: { color: { rgba: number[] } } }
+    material: {
+      solidColor: {
+        color:
+          | { rgba: number[] }
+          | { epoch: string; rgba: number[]; interpolationAlgorithm: string; interpolationDegree: number }
+      }
+    }
     height: number
     extrudedHeight?: number | { interval: string; number: number }[]
     outline: boolean
@@ -203,16 +209,15 @@ export default class CzmlService {
     } else if (type === 'Polygon' || type === 'MultiPolygon') {
       // Si des frames sont disponibles, générer des intervals temporels
       if (event.frames && event.frames.length > 1) {
-        const intervals = this.buildFrameIntervals(event.frames, eventEnd)
+        const { intervals, color } = this.buildFrameData(event.frames, eventEnd, rgbaFill, eventStart)
 
         packet.polygon = {
           positions: intervals,
-          material: { solidColor: { color: { rgba: rgbaFill } } },
+          material: { solidColor: { color } },
           height: 0,
           extrudedHeight: (event.level ?? 1) * 500,
           outline: true,
           outlineColor: { rgba },
-          heightReference: 'CLAMP_TO_GROUND',
         }
       } else {
         // Pas de frames → polygone statique (comportement original)
@@ -244,27 +249,46 @@ export default class CzmlService {
   }
 
   /**
-   * Construit un tableau d'intervals CZML pour les positions du polygone.
-   * Chaque frame définit un interval temporel [frame_time, next_frame_time)
-   * avec ses propres cartographicDegrees.
+   * Construit les données d'animation pour un polygone multi-frame :
+   * - intervals CZML pour les positions (switch discret par interval)
+   * - color échantillonnée avec fade-out/fade-in autour de chaque transition
+   *   (alpha → 0 au moment du switch, invisible = transition douce)
    */
-  private buildFrameIntervals(
+  private buildFrameData(
     frames: EventFrameRow[],
-    eventEnd: string
-  ): { interval: string; cartographicDegrees: number[] }[] {
+    eventEnd: string,
+    fillRgba: number[],
+    eventStart: string
+  ): {
+    intervals: { interval: string; cartographicDegrees: number[] }[]
+    color: { epoch: string; rgba: number[]; interpolationAlgorithm: string; interpolationDegree: number }
+  } {
     const intervals: { interval: string; cartographicDegrees: number[] }[] = []
+    const [r, g, b, a] = fillRgba
+    const epoch = toDateTime(eventStart)
+    const colorSamples: number[] = []
+    const frameTimes = frames.map((f) => toDateTime(f.frame_time))
+
+    // Calculer fadeSec proportionnel à l'écart minimum entre frames
+    // (10 % de l'intervalle le plus court, plafonné à 10 min)
+    const gapsSec = frameTimes
+      .slice(1)
+      .map((t, i) => t.diff(frameTimes[i], 'seconds').seconds)
+    const minGap = Math.min(...gapsSec)
+    const fadeSec = Math.min(minGap * 0.1, 600)
+
+    // Premier keyframe : pleine opacité au début
+    colorSamples.push(0, r, g, b, a)
 
     for (let i = 0; i < frames.length; i++) {
       const frame = frames[i]
       const frameGeojson = JSON.parse(frame.geojson)
 
-      const start = toDateTime(frame.frame_time).toISO()!
+      const start = frameTimes[i].toISO()!
       const end =
-        i < frames.length - 1
-          ? toDateTime(frames[i + 1].frame_time).toISO()!
-          : eventEnd
+        i < frames.length - 1 ? frameTimes[i + 1].toISO()! : eventEnd
 
-      // Extraire les coordonnées du polygone
+      // Positions du polygone pour cet interval
       const gtype = frame.geom_type?.replace('ST_', '') ?? frameGeojson.type
       const ring =
         gtype === 'MultiPolygon'
@@ -276,13 +300,30 @@ export default class CzmlService {
         flatCoords.push(coord[0], coord[1], coord[2] ?? 0)
       }
 
-      intervals.push({
-        interval: `${start}/${end}`,
-        cartographicDegrees: flatCoords,
-      })
+      intervals.push({ interval: `${start}/${end}`, cartographicDegrees: flatCoords })
+
+      // Keyframes de fondu autour de chaque frontière de transition
+      if (i < frames.length - 1) {
+        const transitionSec = frameTimes[i + 1].diff(epoch, 'seconds').seconds
+        colorSamples.push(transitionSec - fadeSec, r, g, b, a) // avant : visible
+        colorSamples.push(transitionSec, r, g, b, 0)            // transition : transparent
+        colorSamples.push(transitionSec + fadeSec, r, g, b, a)  // après : visible
+      }
     }
 
-    return intervals
+    // Dernier keyframe : pleine opacité à la fin
+    const endSec = toDateTime(eventEnd).diff(epoch, 'seconds').seconds
+    colorSamples.push(endSec, r, g, b, a)
+
+    return {
+      intervals,
+      color: {
+        epoch: epoch.toISO()!,
+        rgba: colorSamples,
+        interpolationAlgorithm: 'LINEAR',
+        interpolationDegree: 1,
+      },
+    }
   }
 
   /**
