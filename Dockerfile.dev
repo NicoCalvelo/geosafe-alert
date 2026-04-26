@@ -6,4 +6,4 @@ RUN npm install
 
 EXPOSE 3333
 
-CMD ["sh", "-c", "node ace migration:run --force && node ace serve --hmr"]
+CMD ["sh", "-c", "npm install && node ace migration:run --force && node ace serve --hmr"]
