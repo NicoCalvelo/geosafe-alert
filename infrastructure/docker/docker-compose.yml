@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  db:
+    build: ./db
+    container_name: geosafe_db
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: geosafe
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/backend/Dockerfile
+    container_name: geosafe_backend
+    restart: always
+    env_file:
+      - ../../env/.env.production
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: 123456
+      DB_DATABASE: geosafe
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/frontend/Dockerfile
+    container_name: geosafe_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pg_data:

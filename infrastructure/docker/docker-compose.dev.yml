@@ -1,0 +1,65 @@
+services:
+  db:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/db/Dockerfile.dev
+    container_name: geosafe_db_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: geosafe
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data_dev:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/backend/Dockerfile.dev
+    container_name: geosafe_backend_dev
+    restart: unless-stopped
+    env_file:
+      - ../../env/.env.development
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: 123456
+      DB_DATABASE: geosafe
+    volumes:
+      - ../../apps/backend:/app
+      - /app/node_modules
+    ports:
+      - "3333:3333"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/frontend/Dockerfile.dev
+    container_name: geosafe_frontend_dev
+    volumes:
+      - ../../apps/frontend:/app
+      - /app/node_modules
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: geosafe_pgadmin_dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@geosafe.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+volumes:
+  pg_data_dev:
