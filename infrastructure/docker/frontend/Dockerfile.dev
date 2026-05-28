@@ -1,11 +1,16 @@
 FROM node:22-alpine
+
 WORKDIR /app
 
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 COPY apps/frontend/package*.json ./
-RUN npm ci
+COPY pnpm-lock.yaml ./
+
+RUN pnpm install
 
 COPY apps/frontend ./
 
 EXPOSE 4200
 
-CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--poll", "1000", "--proxy-config", "proxy.conf.docker.json"]
+CMD ["pnpm", "start", "--host", "0.0.0.0", "--poll", "1000"]

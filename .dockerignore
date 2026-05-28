@@ -1,6 +1,61 @@
-node_modules/
-build/
+# =========================
+# Dependencies
+# =========================
+node_modules
+.pnpm-store
+pnpm-lock.yaml
+
+# =========================
+# Git
+# =========================
+.git
+.gitignore
+
+# =========================
+# Logs
+# =========================
+*.log
+logs
+
+# =========================
+# Build outputs
+# =========================
+dist
+build
+out
+coverage
+
+apps/frontend/dist
+apps/frontend/.angular
+apps/backend/build
+
+# =========================
+# Env files
+# =========================
 .env
-geosafe-front/
-geosafe-db/
-tmp/
+.env.*
+
+# =========================
+# IDE
+# =========================
+.vscode
+.idea
+
+# =========================
+# OS
+# =========================
+.DS_Store
+
+# =========================
+# Docker files
+# =========================
+docker-compose*.yml
+Dockerfile*
+infrastructure/docker
+
+# =========================
+# Cache
+# =========================
+.pnpm-store
+.cache
+.turbo
