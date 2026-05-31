@@ -5,14 +5,12 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 COPY pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
 COPY package.json ./
-COPY apps/backend/package.json ./apps/backend/
 
-RUN pnpm install
+COPY apps ./apps
 
-COPY apps/backend ./apps/backend
-
-WORKDIR /app/apps/backend
+RUN pnpm install --frozen-lockfile
 
 EXPOSE 3333
 

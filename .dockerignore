@@ -1,60 +1,32 @@
-# =========================
 # Dependencies
-# =========================
 node_modules
+**/node_modules
 .pnpm-store
 
-# =========================
-# Git
-# =========================
-.git
-.gitignore
-
-# =========================
 # Logs
-# =========================
 *.log
 logs
 
-# =========================
 # Build outputs
-# =========================
 dist
 build
 out
 coverage
+apps/**/dist
+apps/**/.angular
+apps/**/build
 
-apps/frontend/dist
-apps/frontend/.angular
-apps/backend/build
-
-# =========================
-# Env files
-# =========================
+# Env files (optionnel en prod, OK en dev)
 .env
 .env.*
 
-# =========================
 # IDE
-# =========================
 .vscode
 .idea
 
-# =========================
 # OS
-# =========================
 .DS_Store
 
-# =========================
-# Docker files
-# =========================
-docker-compose*.yml
-Dockerfile*
-infrastructure/docker
-
-# =========================
 # Cache
-# =========================
-.pnpm-store
 .cache
 .turbo
