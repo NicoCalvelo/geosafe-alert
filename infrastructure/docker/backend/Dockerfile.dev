@@ -4,17 +4,16 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-COPY apps/backend/package*.json ./
 COPY pnpm-lock.yaml ./
-
-RUN pnpm config set ignore-scripts false
-RUN pnpm approve-builds -y
-RUN pnpm config set minimum-release-age 0
+COPY package.json ./
+COPY apps/backend/package.json ./apps/backend/
 
 RUN pnpm install
 
-COPY apps/backend ./
+COPY apps/backend ./apps/backend
+
+WORKDIR /app/apps/backend
 
 EXPOSE 3333
 
-CMD ["sh", "-c", "node ace migration:run --force && pnpm run dev"]
+CMD ["pnpm", "run", "dev"]
