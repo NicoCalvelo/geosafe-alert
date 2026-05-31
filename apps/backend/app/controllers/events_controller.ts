@@ -7,7 +7,7 @@ import db from '@adonisjs/lucid/services/db'
 import type { HttpContext } from '@adonisjs/core/http'
 import CopernicusService from '#services/copernicus_service'
 import CzmlService from '#services/czml_service'
-import { getWsServer } from '../../providers/ws_provider'
+import { getWsServer } from '#providers/ws_provider'
 import { searchEventValidator, czmlQueryValidator } from '#validators/search_event'
 import { st } from '#services/postgis_service' // Notre instance Knex-PostGIS
 

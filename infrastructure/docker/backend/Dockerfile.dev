@@ -7,11 +7,14 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY pnpm-lock.yaml ./
 COPY pnpm-workspace.yaml ./
 COPY package.json ./
+COPY turbo.json ./
 
-COPY apps ./apps
+COPY apps/backend ./apps/backend/
 
 RUN pnpm install --frozen-lockfile
 
+WORKDIR /app/apps/backend
+
 EXPOSE 3333
 
-CMD ["pnpm", "run", "dev"]
+CMD ["pnpm", "dev"]

@@ -1,4 +1,4 @@
-import env from '../apps/backend/start/env'
+import env from '#start/env'
 import { defineConfig } from '@adonisjs/lucid'
 
 const dbConfig = defineConfig({

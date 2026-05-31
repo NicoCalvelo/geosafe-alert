@@ -1,5 +1,5 @@
 import router from '@adonisjs/core/services/router'
-import { middleware } from './kernel'
+import { middleware } from '#start/kernel'
 
 // Import paresseux (Lazy import) des contrôleurs
 const HomeController = () => import('#controllers/home_controller')

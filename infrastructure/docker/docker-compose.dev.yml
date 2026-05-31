@@ -13,6 +13,11 @@ services:
       - "5432:5432"
     volumes:
       - pg_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d geosafe"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -24,21 +29,16 @@ services:
       - ../../env/.env.development
     environment:
       NODE_ENV: development
-    volumes:
-      - ../../:/app
-
-    working_dir: /app/apps/backend
-
     ports:
       - "3333:3333"
-
     depends_on:
-      - db
-
+      db:
+        condition: service_healthy
+    command: pnpm dev
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3333"]
-      interval: 5s
-      timeout: 3s
+      test: ["CMD", "curl", "-f", "http://localhost:3333/health"]
+      interval: 10s
+      timeout: 5s
       retries: 10
 
   frontend:
@@ -46,14 +46,9 @@ services:
       context: ../../
       dockerfile: infrastructure/docker/frontend/Dockerfile.dev
     container_name: geosafe_frontend_dev
-
-    volumes:
-      - ../../:/app
-    working_dir: /app/apps/frontend
-
+    restart: unless-stopped
     ports:
       - "4200:4200"
-
     depends_on:
       - backend
 

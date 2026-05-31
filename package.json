@@ -1,8 +1,16 @@
 {
-  "name": "geosafe",
+  "name": "geosafe-alert",
   "private": true,
   "packageManager": "pnpm@9.12.0",
-  "pnpm": {
-    "minimumReleaseAge": 0
+  "scripts": {
+    "dev": "pnpm exec turbo run dev",
+    "build": "pnpm exec turbo run build",
+    "start": "pnpm exec turbo run start",
+    "lint": "pnpm exec turbo run lint",
+    "format": "pnpm exec turbo run format",
+    "typecheck": "pnpm exec turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.9.15"
   }
 }

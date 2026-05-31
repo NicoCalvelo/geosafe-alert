@@ -7,11 +7,14 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY pnpm-lock.yaml ./
 COPY pnpm-workspace.yaml ./
 COPY package.json ./
+COPY turbo.json ./
 
-COPY apps ./apps
+COPY apps/frontend ./apps/frontend/
 
 RUN pnpm install --frozen-lockfile
 
+WORKDIR /app/apps/frontend
+
 EXPOSE 4200
 
-CMD ["pnpm", "run", "start", "--", "--host=0.0.0.0", "--poll=2000", "--disable-host-check"]
+CMD ["pnpm", "dev"]
