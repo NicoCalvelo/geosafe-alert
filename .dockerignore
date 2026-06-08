@@ -1,6 +1,32 @@
-node_modules/
-build/
+# Dependencies
+node_modules
+**/node_modules
+.pnpm-store
+
+# Logs
+*.log
+logs
+
+# Build outputs
+dist
+build
+out
+coverage
+apps/**/dist
+apps/**/.angular
+apps/**/build
+
+# Env files (optionnel en prod, OK en dev)
 .env
-geosafe-front/
-geosafe-db/
-tmp/
+.env.*
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+
+# Cache
+.cache
+.turbo

@@ -1,25 +1,74 @@
-# Dependencies and AdonisJS build
-node_modules
-build
-tmp
+# =========================
+# Dependencies
+# =========================
+node_modules/
+.pnpm-store/
+pnpm-lock.yaml
 
-# Secrets
+package-lock.json
+yarn.lock
+
+# =========================
+# Logs
+# =========================
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Build outputs
+# =========================
+dist/
+build/
+out/
+coverage/
+
+# Angular
+apps/frontend/dist/
+apps/frontend/.angular/
+
+# Adonis
+apps/backend/build/
+
+# =========================
+# Env files
+# =========================
 .env
-.env.local
-.env.production.local
-.env.development.local
+.env.*
+!.env.example
 
-# Frontend assets compiled code
-public/assets
+# =========================
+# Docker
+# =========================
+**/tmp/
+**/.docker/
+docker-compose.override.yml
 
-# Build tools specific
-npm-debug.log
-yarn-error.log
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Editors specific
-.fleet
-.idea
-.vscode
-
-# Platform specific
+# =========================
+# OS
+# =========================
 .DS_Store
+Thumbs.db
+
+# =========================
+# Cache
+# =========================
+.cache/
+.turbo/
+.eslintcache
+
+# =========================
+# pnpm / node
+# =========================
+.pnpm-debug.log
