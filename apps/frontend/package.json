@@ -1,0 +1,36 @@
+{
+  "name": "geosafe-front",
+  "version": "0.0.0",
+  "scripts": {
+    "start": "ng serve",
+    "dev": "ng serve --host 0.0.0.0 --poll 1000 --proxy-config proxy.conf.docker.json",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/compiler": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@angular/forms": "^21.2.0",
+    "@angular/platform-browser": "^21.2.0",
+    "@angular/router": "^21.2.0",
+    "cesium": "^1.140.0",
+    "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.3",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.2.7",
+    "@angular/cli": "^21.2.7",
+    "@angular/compiler-cli": "^21.2.0",
+    "@tailwindcss/postcss": "^4.1.12",
+    "jsdom": "^28.0.0",
+    "postcss": "^8.5.3",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^4.1.12",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8"
+  }
+}

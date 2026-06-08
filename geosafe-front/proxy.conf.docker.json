@@ -1,7 +1,0 @@
-{
-  "/api": {
-    "target": "http://backend:3333",
-    "secure": false,
-    "changeOrigin": true
-  }
-}
