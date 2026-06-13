@@ -4,6 +4,13 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ALERT_TYPES, AlertType } from '../models/alert.model';
 
+export interface CzmlEvent {
+  id?: string;
+  type?: string;
+  properties?: Record<string, unknown>;
+  position?: unknown;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AlertsService {
   private http = inject(HttpClient);
@@ -17,7 +24,7 @@ export class AlertsService {
     return this.alertTypes().filter((t) => filters.includes(t.code));
   });
 
-  async fetchCzml(filters?: { from?: string; to?: string; alertTypes?: string[] }): Promise<any[]> {
+  async fetchCzml(filters?: { from?: string; to?: string; alertTypes?: string[] }): Promise<CzmlEvent[]> {
     let params = new HttpParams();
 
     if (filters?.from) params = params.set('from', filters.from);
@@ -29,7 +36,7 @@ export class AlertsService {
     }
 
     return firstValueFrom(
-      this.http.get<any[]>(`${environment.apiUrl}/events/czml`, { params })
+      this.http.get<CzmlEvent[]>(`${environment.apiUrl}/events/czml`, { params })
     );
   }
 

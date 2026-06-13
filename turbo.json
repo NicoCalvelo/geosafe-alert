@@ -4,9 +4,29 @@
       "cache": false,
       "persistent": true
     },
+
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
+    },
+
+    "lint": {
+      "dependsOn": ["^lint"],
+      "outputs": []
+    },
+
+    "test": {
+      "dependsOn": ["^test"],
+      "outputs": []
+    },
+
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": []
+    },
+
+    "format": {
+      "outputs": []
     }
   }
 }

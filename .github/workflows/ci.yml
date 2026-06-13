@@ -1,0 +1,93 @@
+name: GeoSafe CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # =========================
+      # PNPM SETUP + CACHE
+      # =========================
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.12.0 --activate
+
+      - name: Get pnpm store path
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-
+
+      # =========================
+      # INSTALL
+      # =========================
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # =========================
+      # QUALITY CHECKS (FAST FAIL)
+      # =========================
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # =========================
+      # BUILD
+      # =========================
+      - name: Build
+        run: pnpm build
+
+      # =========================
+      # BACKEND TESTS (ISOLATED)
+      # =========================
+      - name: Backend tests
+        run: pnpm --filter geosafe-back test
+        env:
+          ACTIONS_STEP_DEBUG: false
+          NODE_ENV: test
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          SESSION_DRIVER: memory
+
+      # =========================
+      # FRONTEND TESTS (NON BLOCKING OPTION)
+      # =========================
+      - name: Frontend tests
+        run: pnpm --filter geosafe-front test
+
+      # =========================
+      # SECURITY SCAN
+      # =========================
+      - name: Install Semgrep
+        run: python -m pip install semgrep
+
+      - name: Semgrep Scan
+        run: semgrep --config auto --error --strict .

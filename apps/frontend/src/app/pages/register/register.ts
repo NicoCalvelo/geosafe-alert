@@ -29,8 +29,14 @@ export class Register {
         fullName: this.fullName || undefined,
       });
       this.router.navigate(['/dashboard']);
-    } catch (err: any) {
-      this.error.set(err?.error?.errors?.[0]?.message ?? 'Registration failed');
+    } catch (err: unknown) {
+      const error = err as {
+        error?: {
+          errors?: { message?: string }[];
+        };
+      };
+
+      this.error.set(error?.error?.errors?.[0]?.message ?? 'Registration failed');
     } finally {
       this.loading.set(false);
     }
