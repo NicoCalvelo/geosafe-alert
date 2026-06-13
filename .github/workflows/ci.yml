@@ -67,15 +67,17 @@ jobs:
       - name: Backend tests
         run: pnpm --filter geosafe-back test
         env:
-          ACTIONS_STEP_DEBUG: false
           NODE_ENV: test
+          HOST: 127.0.0.1
+          PORT: 3333
+          LOG_LEVEL: info
+          SESSION_DRIVER: memory
           APP_KEY: ${{ secrets.APP_KEY }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
-          SESSION_DRIVER: memory
 
       # =========================
       # FRONTEND TESTS (NON BLOCKING OPTION)
