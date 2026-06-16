@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject, signal, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CesiumViewer } from '../../shared/components/cesium-viewer/cesium-viewer';
 import { Sidebar } from '../../shared/components/sidebar/sidebar';

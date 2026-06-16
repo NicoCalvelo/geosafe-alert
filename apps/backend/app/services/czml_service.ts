@@ -28,12 +28,19 @@ interface CzmlPacket {
     heightReference?: string
   }
   polygon?: {
-    positions: { cartographicDegrees: number[] } | { interval: string; cartographicDegrees: number[] }[]
+    positions:
+      | { cartographicDegrees: number[] }
+      | { interval: string; cartographicDegrees: number[] }[]
     material: {
       solidColor: {
         color:
           | { rgba: number[] }
-          | { epoch: string; rgba: number[]; interpolationAlgorithm: string; interpolationDegree: number }
+          | {
+              epoch: string
+              rgba: number[]
+              interpolationAlgorithm: string
+              interpolationDegree: number
+            }
       }
     }
     height: number
@@ -161,9 +168,7 @@ export default class CzmlService {
     const rgbaFill = hexToRgba(event.color ?? '#ffffff', 100)
 
     // Availability
-    const eventStart = event.event_time
-      ? toDateTime(event.event_time).toISO()!
-      : globalStop
+    const eventStart = event.event_time ? toDateTime(event.event_time).toISO()! : globalStop
     const eventEnd = event.end_time
       ? toDateTime(event.end_time).toISO()!
       : event.status === 'active'
@@ -209,7 +214,12 @@ export default class CzmlService {
     } else if (type === 'Polygon' || type === 'MultiPolygon') {
       // Si des frames sont disponibles, générer des intervals temporels
       if (event.frames && event.frames.length > 1) {
-        const { intervals, color } = this.buildFrameData(event.frames, eventEnd, rgbaFill, eventStart)
+        const { intervals, color } = this.buildFrameData(
+          event.frames,
+          eventEnd,
+          rgbaFill,
+          eventStart
+        )
 
         packet.polygon = {
           positions: intervals,
@@ -221,10 +231,7 @@ export default class CzmlService {
         }
       } else {
         // Pas de frames → polygone statique (comportement original)
-        const ring =
-          type === 'MultiPolygon'
-            ? geojson.coordinates[0][0]
-            : geojson.coordinates[0]
+        const ring = type === 'MultiPolygon' ? geojson.coordinates[0][0] : geojson.coordinates[0]
         const flatCoords: number[] = []
         for (const coord of ring) {
           flatCoords.push(coord[0], coord[1], coord[2] ?? 0)
@@ -261,7 +268,12 @@ export default class CzmlService {
     eventStart: string
   ): {
     intervals: { interval: string; cartographicDegrees: number[] }[]
-    color: { epoch: string; rgba: number[]; interpolationAlgorithm: string; interpolationDegree: number }
+    color: {
+      epoch: string
+      rgba: number[]
+      interpolationAlgorithm: string
+      interpolationDegree: number
+    }
   } {
     const intervals: { interval: string; cartographicDegrees: number[] }[] = []
     const [r, g, b, a] = fillRgba
@@ -271,9 +283,7 @@ export default class CzmlService {
 
     // Calculer fadeSec proportionnel à l'écart minimum entre frames
     // (10 % de l'intervalle le plus court, plafonné à 10 min)
-    const gapsSec = frameTimes
-      .slice(1)
-      .map((t, i) => t.diff(frameTimes[i], 'seconds').seconds)
+    const gapsSec = frameTimes.slice(1).map((t, i) => t.diff(frameTimes[i], 'seconds').seconds)
     const minGap = Math.min(...gapsSec)
     const fadeSec = Math.min(minGap * 0.1, 600)
 
@@ -285,15 +295,12 @@ export default class CzmlService {
       const frameGeojson = JSON.parse(frame.geojson)
 
       const start = frameTimes[i].toISO()!
-      const end =
-        i < frames.length - 1 ? frameTimes[i + 1].toISO()! : eventEnd
+      const end = i < frames.length - 1 ? frameTimes[i + 1].toISO()! : eventEnd
 
       // Positions du polygone pour cet interval
       const gtype = frame.geom_type?.replace('ST_', '') ?? frameGeojson.type
       const ring =
-        gtype === 'MultiPolygon'
-          ? frameGeojson.coordinates[0][0]
-          : frameGeojson.coordinates[0]
+        gtype === 'MultiPolygon' ? frameGeojson.coordinates[0][0] : frameGeojson.coordinates[0]
 
       const flatCoords: number[] = []
       for (const coord of ring) {
@@ -306,8 +313,8 @@ export default class CzmlService {
       if (i < frames.length - 1) {
         const transitionSec = frameTimes[i + 1].diff(epoch, 'seconds').seconds
         colorSamples.push(transitionSec - fadeSec, r, g, b, a) // avant : visible
-        colorSamples.push(transitionSec, r, g, b, 0)            // transition : transparent
-        colorSamples.push(transitionSec + fadeSec, r, g, b, a)  // après : visible
+        colorSamples.push(transitionSec, r, g, b, 0) // transition : transparent
+        colorSamples.push(transitionSec + fadeSec, r, g, b, a) // après : visible
       }
     }
 
@@ -368,9 +375,9 @@ function hexToRgba(hex: string, alpha: number = 255): number[] {
       : clean
 
   return [
-    parseInt(fullHex.substring(0, 2), 16),
-    parseInt(fullHex.substring(2, 4), 16),
-    parseInt(fullHex.substring(4, 6), 16),
+    Number.parseInt(fullHex.substring(0, 2), 16),
+    Number.parseInt(fullHex.substring(2, 4), 16),
+    Number.parseInt(fullHex.substring(4, 6), 16),
     alpha,
   ]
 }

@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
-  cesiumIonToken: '',
+  apiUrl: 'http://localhost:3333',
+  cesiumIonToken: ''
 };

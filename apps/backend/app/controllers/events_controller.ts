@@ -11,6 +11,8 @@ import { getWsServer } from '#providers/ws_provider'
 import { searchEventValidator, czmlQueryValidator } from '#validators/search_event'
 import { st } from '#services/postgis_service' // Notre instance Knex-PostGIS
 
+const knex = db.connection().getWriteClient()
+
 export default class EventsController {
   public async ingest({ response }: HttpContext) {
     const service = new CopernicusService()
@@ -57,7 +59,7 @@ export default class EventsController {
         await EventFrame.query().where('eventId', event.id).delete()
 
         // Bulk insert des nouveaux frames
-        const knex = db.connection().getWriteClient()
+        //const knex = db.connection().getWriteClient()
         const frameRows = item.Frames.map((frame) => ({
           event_id: event.id,
           frame_time: frame.Time,
@@ -89,7 +91,7 @@ export default class EventsController {
     const searchRadius = radius || 5000
 
     // 1. Récupérer le client Knex brut depuis Lucid
-    const knex = db.connection().getWriteClient()
+    //const knex = db.connection().getWriteClient()
 
     // 2. Création du point utilisateur reutilisable pour la distance et le filtrage
     const userLocation = st.geomFromText(`POINT(${lon} ${lat})`, 4326)
@@ -130,7 +132,7 @@ export default class EventsController {
   public async streamCzml({ request, response }: HttpContext) {
     const { from, to, alertTypes } = await request.validateUsing(czmlQueryValidator)
 
-    const knex = db.connection().getWriteClient()
+    //const knex = db.connection().getWriteClient()
 
     let query = db
       .from('events')
@@ -170,14 +172,10 @@ export default class EventsController {
     let framesMap = new Map<string, any[]>()
 
     if (eventIds.length > 0) {
-      const knex = db.connection().getWriteClient()
+      //const knex = db.connection().getWriteClient()
       const frames = await db
         .from('event_frames')
-        .select(
-          'event_id',
-          'frame_time',
-          'properties'
-        )
+        .select('event_id', 'frame_time', 'properties')
         .select(st.asGeoJSON('geom').as('geojson'))
         .select(knex.raw('ST_GeometryType(geom) as geom_type'))
         .whereIn('event_id', eventIds)

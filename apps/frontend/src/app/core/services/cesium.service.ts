@@ -2,6 +2,8 @@ import { Injectable, signal } from '@angular/core';
 import * as Cesium from 'cesium';
 import { environment } from '../../../environments/environment';
 
+type CzmlJson = unknown;
+
 @Injectable({ providedIn: 'root' })
 export class CesiumService {
   private viewer: Cesium.Viewer | null = null;
@@ -35,7 +37,7 @@ export class CesiumService {
     return this.viewer;
   }
 
-  async loadCzml(czmlData: any[]): Promise<void> {
+  async loadCzml(czmlData: CzmlJson): Promise<void> {
     if (!this.viewer) return;
 
     // Remove previous data source
