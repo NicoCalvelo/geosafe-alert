@@ -56,6 +56,10 @@ export class AuthService {
     this._currentUser.set(res.user);
   }
 
+  updateUser(updated: User): void {
+    this._currentUser.set(updated);
+  }
+
   private async tryRestoreSession(): Promise<void> {
     const token = this.getToken();
     if (!token) return;

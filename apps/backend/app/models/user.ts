@@ -26,6 +26,15 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare role: string
 
+  @column()
+  declare location_address: string | null
+
+  @column()
+  declare location_lat: number | null
+
+  @column()
+  declare location_lng: number | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

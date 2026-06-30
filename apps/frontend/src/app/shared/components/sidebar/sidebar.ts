@@ -2,11 +2,12 @@ import { Component, input, output, inject, computed, signal } from '@angular/cor
 import { AuthService } from '../../../core/services/auth.service';
 import { AlertsService } from '../../../core/services/alerts.service';
 import { CesiumService } from '../../../core/services/cesium.service';
+import { RouterLink } from '@angular/router';
 import { AlertCard } from '../alert-card/alert-card';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [AlertCard],
+  imports: [AlertCard, RouterLink],
   templateUrl: './sidebar.html',
 })
 export class Sidebar {
