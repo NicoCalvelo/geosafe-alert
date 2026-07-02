@@ -64,12 +64,8 @@ export default class extends BaseSchema {
       )
     `)
 
-    await this.db.rawQuery(
-      `CREATE INDEX idx_events_geom_gist ON events USING GIST (geom)`
-    )
-    await this.db.rawQuery(
-      `CREATE INDEX idx_events_event_time ON events (event_time)`
-    )
+    await this.db.rawQuery(`CREATE INDEX idx_events_geom_gist ON events USING GIST (geom)`)
+    await this.db.rawQuery(`CREATE INDEX idx_events_event_time ON events (event_time)`)
     await this.db.rawQuery(
       `CREATE INDEX idx_events_source_external ON events (source_id, external_id)`
     )
@@ -127,12 +123,8 @@ export default class extends BaseSchema {
       )
     `)
 
-    await this.db.rawQuery(
-      `CREATE INDEX idx_cities_geom_gist ON cities USING GIST (geom)`
-    )
-    await this.db.rawQuery(
-      `CREATE INDEX idx_cities_name ON cities (lower(name))`
-    )
+    await this.db.rawQuery(`CREATE INDEX idx_cities_geom_gist ON cities USING GIST (geom)`)
+    await this.db.rawQuery(`CREATE INDEX idx_cities_name ON cities (lower(name))`)
 
     // ── user_searches ────────────────────────────────────────
     await this.db.rawQuery(`

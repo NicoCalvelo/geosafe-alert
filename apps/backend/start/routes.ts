@@ -5,6 +5,7 @@ import { middleware } from '#start/kernel'
 const HomeController = () => import('#controllers/home_controller')
 const AuthController = () => import('#controllers/auth_controller')
 const EventsController = () => import('#controllers/events_controller')
+const ProfileController = () => import('#controllers/profile_controller')
 
 router.get('/', [HomeController, 'index'])
 
@@ -22,6 +23,10 @@ router
     // Auth
     router.delete('/auth/logout', [AuthController, 'logout'])
     router.get('/auth/me', [AuthController, 'me'])
+
+    // Profile
+    router.get('/profile', [ProfileController, 'show'])
+    router.put('/profile', [ProfileController, 'update'])
 
     // Ingestion (protégée)
     router.post('/ingest', [EventsController, 'ingest'])

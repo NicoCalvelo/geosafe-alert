@@ -38,7 +38,13 @@
   @if (user()) {
     <div class="px-4 py-3 border-b border-gray-700 shrink-0">
       <p class="text-sm text-white truncate">{{ user()!.email }}</p>
-      <p class="text-xs text-gray-400 capitalize">{{ user()!.role }}</p>
+      <div class="flex items-center justify-between mt-0.5">
+        <p class="text-xs text-gray-400 capitalize">{{ user()!.role }}</p>
+        <a
+          routerLink="/profile"
+          class="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+        >My profile</a>
+      </div>
     </div>
   }
 
