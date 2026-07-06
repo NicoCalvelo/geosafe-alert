@@ -1,6 +1,12 @@
 {
   "name": "geosafe-alert",
   "private": true,
+  "packages": [
+    "apps/*"
+  ],
+  "blockExoticSubdeps": true,
+  "minimumReleaseAge": 10080,
+  "trustPolicy": "no-downgrade",
   "packageManager": "pnpm@9.12.0",
   "scripts": {
     "dev": "pnpm exec turbo run dev",
