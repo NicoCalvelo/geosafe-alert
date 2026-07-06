@@ -19,16 +19,9 @@ export default class GeocodeController {
 
     const data = await request.validateUsing(schema)
 
-    const proximity =
-      data.lat && data.lng
-        ? { lat: data.lat, lng: data.lng }
-        : undefined
+    const proximity = data.lat && data.lng ? { lat: data.lat, lng: data.lng } : undefined
 
-    const results = await GeocodeService.autocomplete(
-      data.query,
-      data.limit || 5,
-      proximity
-    )
+    const results = await GeocodeService.autocomplete(data.query, data.limit || 5, proximity)
 
     return response.ok(results)
   }
