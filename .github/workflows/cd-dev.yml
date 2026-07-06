@@ -37,6 +37,7 @@ jobs:
           file: infrastructure/docker/frontend/Dockerfile
           push: true
           tags: |
+            ghcr.io/${{ env.IMAGE_FRONTEND }}:develop
             ghcr.io/${{ env.IMAGE_FRONTEND }}:dev-${{ github.run_number }}
 
       # BACKEND
@@ -47,4 +48,5 @@ jobs:
           file: infrastructure/docker/backend/Dockerfile
           push: true
           tags: |
+            ghcr.io/${{ env.IMAGE_BACKEND }}:develop
             ghcr.io/${{ env.IMAGE_BACKEND }}:dev-${{ github.run_number }}
