@@ -61,7 +61,7 @@ export class AlertsService {
    * @param lng Longitude
    * @param radiusKm Search radius in kilometers (default: 5)
    */
-  async fetchNearbyAlerts(lat: number, lng: number, radiusKm: number = 5): Promise<CzmlEvent[]> {
+  async fetchNearbyAlerts(lat: number, lng: number, radiusKm = 5): Promise<CzmlEvent[]> {
     let params = new HttpParams()
       .set('lat', lat.toString())
       .set('lon', lng.toString())

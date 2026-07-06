@@ -29,8 +29,11 @@
         <li
           [class.highlighted]="highlightedIndex() === idx"
           (click)="selectAddress(result)"
+          (keydown.enter)="selectAddress(result)"
+          (keydown.space)="onResultSpace($event, result)"
           role="option"
           [attr.aria-selected]="highlightedIndex() === idx"
+          tabindex="0"
           class="result-item"
         >
           <div class="result-main">{{ result.name }}</div>

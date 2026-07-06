@@ -1,6 +1,5 @@
 import {
   Component,
-  effect,
   EventEmitter,
   inject,
   input,
@@ -112,12 +111,14 @@ export class SearchBar implements OnDestroy {
         break
 
       case 'Enter':
+      {
         event.preventDefault()
         const idx = this.highlightedIndex()
         if (idx >= 0 && idx < suggestionsLength) {
           this.selectAddress(this.suggestions()[idx])
         }
         break
+      }
 
       case 'Escape':
         event.preventDefault()
@@ -132,6 +133,11 @@ export class SearchBar implements OnDestroy {
     this.suggestions.set([])
     this.highlightedIndex.set(-1)
     this.addressSelected.emit(result)
+  }
+
+  onResultSpace(event: KeyboardEvent, result: GeocodeResult): void {
+    event.preventDefault()
+    this.selectAddress(result)
   }
 
   onFocus(): void {

@@ -81,7 +81,7 @@ export class CesiumService {
    * @param lng Longitude
    * @param altitude Altitude in meters (default: 5000m for good overview)
    */
-  flyToLocation(lat: number, lng: number, altitude: number = 5000): void {
+  flyToLocation(lat: number, lng: number, altitude = 5000): void {
     if (!this.viewer) return;
 
     this.viewer.camera.flyTo({

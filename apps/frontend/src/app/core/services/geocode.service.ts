@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core'
-import { HttpClient } from '@angular/common/http'
-import { Observable, catchError } from 'rxjs'
+import { HttpClient, HttpParams } from '@angular/common/http'
+import { Observable } from 'rxjs'
 import { environment } from '../../../environments/environment'
 
 export interface GeocodeResult {
@@ -26,20 +26,15 @@ export class GeocodeService {
    */
   autocomplete(
     query: string,
-    limit: number = 5,
+    limit = 5,
     proximity?: { lat: number; lng: number }
   ): Observable<GeocodeResult[]> {
-    let params: any = {
-      query,
-      limit: limit.toString(),
-    }
+    let params = new HttpParams().set('query', query).set('limit', limit.toString())
 
     if (proximity) {
-      params = {
-        ...params,
-        lat: proximity.lat.toString(),
-        lng: proximity.lng.toString(),
-      }
+      params = params
+        .set('lat', proximity.lat.toString())
+        .set('lng', proximity.lng.toString())
     }
 
     return this.http.get<GeocodeResult[]>(`${this.apiUrl}/autocomplete`, {
