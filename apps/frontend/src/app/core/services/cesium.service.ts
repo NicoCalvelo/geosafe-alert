@@ -12,15 +12,26 @@ export class CesiumService {
   readonly selectedEntity = signal<Cesium.Entity | null>(null);
 
   initViewer(container: HTMLElement): Cesium.Viewer {
-    if (environment.cesiumIonToken) {
+    const hasToken = !!environment.cesiumIonToken;
+
+    if (hasToken) {
       Cesium.Ion.defaultAccessToken = environment.cesiumIonToken;
     }
 
+    const baseLayer = hasToken
+      ? undefined
+      : Cesium.ImageryLayer.fromProviderAsync(
+          Cesium.TileMapServiceImageryProvider.fromUrl(
+            Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII')
+          )
+        );
+
     this.viewer = new Cesium.Viewer(container, {
+      ...(baseLayer ? { baseLayer } : {}),
       timeline: true,
       animation: true,
       sceneModePicker: true,
-      baseLayerPicker: true,
+      baseLayerPicker: hasToken,
       navigationHelpButton: false,
       homeButton: true,
       fullscreenButton: false,
@@ -62,6 +73,21 @@ export class CesiumService {
       this.viewer.flyTo(entity);
       this.viewer.selectedEntity = entity;
     }
+  }
+
+  /**
+   * Fly to a specific geographic location (lat/lng)
+   * @param lat Latitude
+   * @param lng Longitude
+   * @param altitude Altitude in meters (default: 5000m for good overview)
+   */
+  flyToLocation(lat: number, lng: number, altitude: number = 5000): void {
+    if (!this.viewer) return;
+
+    this.viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(lng, lat, altitude),
+      duration: 2,
+    });
   }
 
   getEntities(): Cesium.Entity[] {

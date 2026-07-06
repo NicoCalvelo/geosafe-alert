@@ -54,7 +54,6 @@ docker-compose.override.yml
 .idea/
 *.swp
 *.swo
-AGENTS.md
 
 # =========================
 # OS
