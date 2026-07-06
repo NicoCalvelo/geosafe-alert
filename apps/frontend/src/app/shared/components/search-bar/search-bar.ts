@@ -135,7 +135,7 @@ export class SearchBar implements OnDestroy {
     this.addressSelected.emit(result)
   }
 
-  onResultSpace(event: KeyboardEvent, result: GeocodeResult): void {
+  onResultSpace(event: Event, result: GeocodeResult): void {
     event.preventDefault()
     this.selectAddress(result)
   }
