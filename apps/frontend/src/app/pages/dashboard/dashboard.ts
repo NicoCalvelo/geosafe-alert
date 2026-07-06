@@ -3,13 +3,14 @@ import { Subscription } from 'rxjs';
 import { CesiumViewer } from '../../shared/components/cesium-viewer/cesium-viewer';
 import { Sidebar } from '../../shared/components/sidebar/sidebar';
 import { Toast } from '../../shared/components/toast/toast';
+import { SearchBar } from '../../shared/components/search-bar/search-bar';
 import { CesiumService } from '../../core/services/cesium.service';
 import { AlertsService } from '../../core/services/alerts.service';
 import { WsService } from '../../core/services/ws.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CesiumViewer, Sidebar, Toast],
+  imports: [CesiumViewer, Sidebar, Toast, SearchBar],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })

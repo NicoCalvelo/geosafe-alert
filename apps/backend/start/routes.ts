@@ -6,6 +6,7 @@ const HomeController = () => import('#controllers/home_controller')
 const AuthController = () => import('#controllers/auth_controller')
 const EventsController = () => import('#controllers/events_controller')
 const ProfileController = () => import('#controllers/profile_controller')
+const GeocodeController = () => import('#controllers/geocode_controller')
 
 router.get('/', [HomeController, 'index'])
 
@@ -36,6 +37,9 @@ router
 
     // Recherche spatiale
     router.get('/events/nearby', [EventsController, 'nearby'])
+
+    // Géocodage (autocomplete adresses)
+    router.get('/geocode/autocomplete', [GeocodeController, 'autocomplete'])
 
     // Flux CZML pour Cesium
     router.get('/events/czml', [EventsController, 'streamCzml'])

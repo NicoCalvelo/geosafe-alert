@@ -1,0 +1,49 @@
+<div class="search-bar-container">
+  <!-- Search input -->
+  <div class="search-input-wrapper">
+    <input
+      type="text"
+      [value]="searchQuery()"
+      (input)="onSearch($event)"
+      (keydown)="onKeyDown($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      placeholder="Rechercher une adresse..."
+      class="search-input"
+      aria-label="Search addresses"
+      autocomplete="off"
+    />
+    @if (loading()) {
+      <div class="spinner" aria-label="Loading">
+        <svg viewBox="0 0 50 50">
+          <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="2" />
+        </svg>
+      </div>
+    }
+  </div>
+
+  <!-- Dropdown results -->
+  @if (showResults() && suggestions().length > 0) {
+    <ul class="results-dropdown" role="listbox">
+      @for (result of suggestions(); let idx = $index; track result.id) {
+        <li
+          [class.highlighted]="highlightedIndex() === idx"
+          (click)="selectAddress(result)"
+          role="option"
+          [attr.aria-selected]="highlightedIndex() === idx"
+          class="result-item"
+        >
+          <div class="result-main">{{ result.name }}</div>
+          @if (result.context) {
+            <div class="result-context">{{ result.context }}</div>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  <!-- No results -->
+  @if (showResults() && searchQuery().length > 0 && suggestions().length === 0 && !loading()) {
+    <div class="no-results">Aucune adresse trouvée</div>
+  }
+</div>

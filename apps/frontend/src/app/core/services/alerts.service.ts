@@ -55,6 +55,31 @@ export class AlertsService {
     );
   }
 
+  /**
+   * Fetch CZML data filtered by geographic location and proximity
+   * @param lat Latitude
+   * @param lng Longitude
+   * @param radiusKm Search radius in kilometers (default: 5)
+   */
+  async fetchNearbyAlerts(lat: number, lng: number, radiusKm: number = 5): Promise<CzmlEvent[]> {
+    let params = new HttpParams()
+      .set('lat', lat.toString())
+      .set('lon', lng.toString())
+      .set('radius', radiusKm.toString());
+
+    // Also apply active alert type filters
+    const filters = this.activeFilters();
+    if (filters.length > 0) {
+      for (const code of filters) {
+        params = params.append('alertTypes[]', code);
+      }
+    }
+
+    return firstValueFrom(
+      this.http.get<CzmlEvent[]>(`${environment.apiUrl}/events/czml`, { params })
+    );
+  }
+
   toggleFilter(code: string): void {
     const current = this.activeFilters();
     if (current.includes(code)) {

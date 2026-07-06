@@ -9,6 +9,9 @@
 
   <!-- Main area -->
   <div class="flex-1 relative">
+    <!-- Search bar -->
+    <app-search-bar (addressSelected)="onAddressSelected($event)" />
+
     <!-- Toggle sidebar button (visible when collapsed) -->
     @if (sidebarCollapsed()) {
       <button
