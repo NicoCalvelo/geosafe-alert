@@ -138,9 +138,8 @@ export default class EventsController {
   }
 
   public async streamCzml({ request, response }: HttpContext) {
-    const { from, to, alertTypes, lat, lon, radius } = await request.validateUsing(
-      czmlQueryValidator
-    )
+    const { from, to, alertTypes, lat, lon, radius } =
+      await request.validateUsing(czmlQueryValidator)
 
     //const knex = db.connection().getWriteClient()
 
