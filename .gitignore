@@ -39,6 +39,7 @@ apps/backend/build/
 .env
 .env.*
 !.env.example
+env/*.local
 
 # =========================
 # Docker
