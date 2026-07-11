@@ -3,13 +3,14 @@ import { Subscription } from 'rxjs';
 import { CesiumViewer } from '../../shared/components/cesium-viewer/cesium-viewer';
 import { Sidebar } from '../../shared/components/sidebar/sidebar';
 import { Toast } from '../../shared/components/toast/toast';
+import { SearchBar } from '../../shared/components/search-bar/search-bar';
 import { CesiumService } from '../../core/services/cesium.service';
 import { AlertsService } from '../../core/services/alerts.service';
 import { WsService } from '../../core/services/ws.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CesiumViewer, Sidebar, Toast],
+  imports: [CesiumViewer, Sidebar, Toast, SearchBar],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -53,6 +54,24 @@ export class Dashboard implements OnInit, OnDestroy {
   onSynced(): void {
     this.toast?.show('Sync complete — reloading alerts');
     this.loadAlerts();
+  }
+
+  async onAddressSelected(result: { lat: number; lng: number; name: string }): Promise<void> {
+    // Fly to the selected location
+    this.cesium.flyToLocation(result.lat, result.lng, 5000);
+
+    // Fetch nearby alerts (5km radius)
+    this.loading.set(true);
+    try {
+      const czml = await this.alerts.fetchNearbyAlerts(result.lat, result.lng, 5);
+      await this.cesium.loadCzml(czml);
+      this.toast?.show(`Showing alerts near ${result.name}`);
+    } catch (err) {
+      console.error('Failed to load nearby alerts:', err);
+      this.toast?.show('Error loading nearby alerts');
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   private async loadAlerts(): Promise<void> {

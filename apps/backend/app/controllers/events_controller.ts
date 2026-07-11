@@ -130,7 +130,8 @@ export default class EventsController {
   }
 
   public async streamCzml({ request, response }: HttpContext) {
-    const { from, to, alertTypes } = await request.validateUsing(czmlQueryValidator)
+    const { from, to, alertTypes, lat, lon, radius } =
+      await request.validateUsing(czmlQueryValidator)
 
     //const knex = db.connection().getWriteClient()
 
@@ -161,6 +162,20 @@ export default class EventsController {
     }
     if (alertTypes && alertTypes.length > 0) {
       query = query.whereIn('alert_types.code', alertTypes)
+    }
+
+    // Spatial filtering by proximity
+    if (lat !== undefined && lon !== undefined) {
+      const searchRadius = (radius || 5) * 1000 // Convert km to meters
+      const userLocation = st.geomFromText(`POINT(${lon} ${lat})`, 4326)
+
+      query = query.where(
+        st.dwithin(
+          knex.raw('events.geom::geography'),
+          knex.raw('?::geography', [userLocation]),
+          searchRadius
+        )
+      )
     }
 
     query = query.orderBy('events.event_time', 'asc')

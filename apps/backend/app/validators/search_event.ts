@@ -16,5 +16,9 @@ export const czmlQueryValidator = vine.compile(
     to: vine.string().optional(),
     // Filtrage par codes de type d'alerte (ex: ['fire', 'flood'])
     alertTypes: vine.array(vine.string()).optional(),
+    // Filtrage spatial (lat, lon, radius en km)
+    lat: vine.number().range([-90, 90]).optional(),
+    lon: vine.number().range([-180, 180]).optional(),
+    radius: vine.number().min(0).optional(), // radius en km, default 5
   })
 )
