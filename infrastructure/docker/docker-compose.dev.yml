@@ -37,12 +37,14 @@ services:
 
     volumes:
       - ../../:/app
-      - backend_node_modules:/app/node_modules
+      - pnpm-store:/pnpm/store
 
     env_file:
       - ../../env/.env.development
 
     environment:
+      PNPM_HOME: /pnpm
+      PNPM_STORE_DIR: /pnpm/store
       NODE_ENV: development
 
     ports:
@@ -54,7 +56,7 @@ services:
 
     command: >
       sh -c "
-      pnpm install &&
+      pnpm install --force &&
       pnpm --filter geosafe-back dev
       "
 
@@ -77,12 +79,14 @@ services:
 
     volumes:
       - ../../:/app
-      - frontend_node_modules:/app/node_modules
+      - pnpm-store:/pnpm/store
 
     ports:
       - "4200:4200"
 
     environment:
+      PNPM_HOME: /pnpm
+      PNPM_STORE_DIR: /pnpm/store
       CHOKIDAR_USEPOLLING: "true"
 
     depends_on:
@@ -90,7 +94,7 @@ services:
 
     command: >
       sh -c "
-      pnpm install &&
+      pnpm install --force &&
       pnpm --filter geosafe-front start --host 0.0.0.0
       "
 
@@ -113,5 +117,4 @@ services:
 
 volumes:
   pg_data_dev:
-  backend_node_modules:
-  frontend_node_modules:
+  pnpm-store:
