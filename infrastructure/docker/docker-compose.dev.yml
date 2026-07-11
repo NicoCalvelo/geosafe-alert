@@ -51,7 +51,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-<<<<<<< HEAD
     command: >
       sh -c "
       pnpm install &&
@@ -59,15 +58,7 @@ services:
       node ace migration:run &&
       pnpm dev
       "
-=======
-
-    command: >
-      sh -c "
-      pnpm install &&
-      pnpm --filter geosafe-back dev
-      "
-
->>>>>>> b055800094a2510e7b7b3f9a3472b27138b09e67
+>>>>>>>>> Temporary merge branch 2
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3333/health"]
       interval: 10s
