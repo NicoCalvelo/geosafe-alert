@@ -34,7 +34,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "node ace migration:run && pnpm dev"
+    command: >
+      sh -c "
+      pnpm install &&
+      pnpm --filter geosafe-back dev &&
+      node ace migration:run &&
+      pnpm dev
+      "
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3333/health"]
       interval: 10s
