@@ -1,19 +1,16 @@
-FROM node:22-alpine AS build
+FROM node:22-alpine
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
-COPY . .
+COPY pnpm-lock.yaml .
+COPY pnpm-workspace.yaml .
+COPY package.json .
+COPY turbo.json .
 
-RUN pnpm install --frozen-lockfile
-RUN pnpm build
+COPY apps/frontend/package.json ./apps/frontend/
 
+RUN pnpm install
 
-FROM nginx:alpine
-
-COPY apps/frontend/nginx.conf /etc/nginx/conf.d/default.conf
-
-COPY --from=build /app/apps/frontend/dist /usr/share/nginx/html
-
-EXPOSE 80
+EXPOSE 4200

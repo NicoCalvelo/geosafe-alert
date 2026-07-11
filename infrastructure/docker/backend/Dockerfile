@@ -2,19 +2,15 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+COPY pnpm-lock.yaml .
+COPY pnpm-workspace.yaml .
+COPY package.json .
+COPY turbo.json .
 
-COPY apps/backend/build ./build
-COPY apps/backend/package.json ./
+COPY apps/backend/package.json ./apps/backend/
 
-RUN pnpm install --prod --frozen-lockfile
-
-RUN chown -R appuser:appgroup /app
-
-USER appuser
+RUN pnpm install
 
 EXPOSE 3333
-
-CMD ["node", "build/bin/server.js"]

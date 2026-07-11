@@ -32,6 +32,9 @@ router
     // Ingestion (protégée)
     router.post('/ingest', [EventsController, 'ingest'])
 
+    // Types d'alerte disponibles
+    router.get('/alert-types', [EventsController, 'alertTypes'])
+
     // Recherche spatiale
     router.get('/events/nearby', [EventsController, 'nearby'])
 

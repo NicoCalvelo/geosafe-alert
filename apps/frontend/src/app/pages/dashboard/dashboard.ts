@@ -27,8 +27,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private wsSub: Subscription | null = null;
 
   ngOnInit(): void {
-    // Load CZML once viewer is ready (small delay for Cesium init)
-    setTimeout(() => this.loadAlerts(), 500);
+    void this.initDashboard();
 
     // WebSocket connection
     this.ws.connect();
@@ -56,6 +55,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.loadAlerts();
   }
 
+<<<<<<< HEAD
   async onAddressSelected(result: { lat: number; lng: number; name: string }): Promise<void> {
     // Fly to the selected location
     this.cesium.flyToLocation(result.lat, result.lng, 5000);
@@ -72,6 +72,13 @@ export class Dashboard implements OnInit, OnDestroy {
     } finally {
       this.loading.set(false);
     }
+=======
+  private async initDashboard(): Promise<void> {
+    await this.alerts.loadAlertTypes();
+
+    // Load CZML once viewer is ready (small delay for Cesium init)
+    setTimeout(() => this.loadAlerts(), 500);
+>>>>>>> b055800094a2510e7b7b3f9a3472b27138b09e67
   }
 
   private async loadAlerts(): Promise<void> {

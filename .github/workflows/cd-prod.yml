@@ -1,0 +1,50 @@
+name: GeoSafe CD PROD
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_FRONTEND: ${{ github.repository_owner }}/geosafe-frontend
+  IMAGE_BACKEND: ${{ github.repository_owner }}/geosafe-backend
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # FRONTEND
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infrastructure/docker/frontend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.IMAGE_FRONTEND }}:v${{ github.run_number }}
+
+      # BACKEND
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infrastructure/docker/backend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.IMAGE_BACKEND }}:v${{ github.run_number }}

@@ -14,6 +14,14 @@ import { st } from '#services/postgis_service' // Notre instance Knex-PostGIS
 const knex = db.connection().getWriteClient()
 
 export default class EventsController {
+  public async alertTypes({ response }: HttpContext) {
+    const types = await AlertType.query()
+      .select('id', 'code', 'label', 'icon', 'color')
+      .orderBy('label', 'asc')
+
+    return response.ok(types)
+  }
+
   public async ingest({ response }: HttpContext) {
     const service = new CopernicusService()
     const data = await service.fetchLatestEvents()
