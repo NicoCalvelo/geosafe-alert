@@ -6,6 +6,7 @@
     "dev": "pnpm exec turbo run dev",
     "prod": "pnpm exec turbo run prod",
     "build": "pnpm exec turbo run build",
+    "migrate": "pnpm exec turbo run migrate",
     "start": "pnpm exec turbo run start",
     "lint": "pnpm exec turbo run lint",
     "format": "pnpm exec turbo run format",
