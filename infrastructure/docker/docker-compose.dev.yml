@@ -55,7 +55,8 @@ services:
     command: >
       sh -c "
       pnpm install &&
-      pnpm --filter geosafe-back dev
+      pnpm --filter geosafe-back dev &&
+      pnpm --filter geosafe-back migrate:run
       "
 
     healthcheck:

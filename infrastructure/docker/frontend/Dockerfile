@@ -9,7 +9,7 @@ COPY pnpm-workspace.yaml .
 COPY package.json .
 COPY turbo.json .
 
-COPY apps/frontend/package.json ./apps/frontend/
+COPY apps/frontend ./apps/frontend/
 
 RUN pnpm install
 
