@@ -36,12 +36,16 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # =========================
-      # ACR LOGIN
+      # ACR LOGIN + SELECT SUBSCRIPTION
       # =========================
       - name: Login to ACR
         run: |
           az acr login \
             --name acrgeosafedev
+      - name: Select subscription
+        run: |
+          az account set \
+            --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # =========================
       # FRONTEND
