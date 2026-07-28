@@ -36,7 +36,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # =========================
-      # ACR LOGIN + SELECT SUBSCRIPTION
+      # ACR LOGIN + SELECT SUBSCRIPTION + VERIFY + CHECK FRONTEND APP
       # =========================
       - name: Login to ACR
         run: |
@@ -46,6 +46,14 @@ jobs:
         run: |
           az account set \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Verify
+        run: |
+          az account show
+      - name: Check frontend app
+        run: |
+          az containerapp show \
+            --name ca-frontend-geosafe-dev \
+            --resource-group rg-geosafe-dev
 
       # =========================
       # FRONTEND
