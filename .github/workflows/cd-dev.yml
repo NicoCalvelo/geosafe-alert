@@ -56,6 +56,17 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:develop
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:dev-${{ github.run_number }}
 
+
+      # =========================
+      # DEPLOY FRONTEND
+      # =========================
+      - name: Deploy Frontend
+        run: |
+          az containerapp update \
+            --name ca-frontend-geosafe-dev \
+            --resource-group rg-geosafe-dev \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:develop
+
       # =========================
       # BACKEND
       # =========================
@@ -68,3 +79,13 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:develop
             ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:dev-${{ github.run_number }}
+
+      # =========================
+      # DEPLOY BACKEND
+      # =========================
+      - name: Deploy Backend
+        run: |
+          az containerapp update \
+            --name ca-backend-geosafe-dev \
+            --resource-group rg-geosafe-dev \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:develop
