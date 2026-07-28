@@ -61,9 +61,18 @@ module "key_vault" {
   mapbox_api_key = var.mapbox_api_key
 }
 
-module "managed_identity" {
+module "Backend_identity" {
   source      = "../../modules/managed-identity"
-  environment = var.environment
+  environment = "${var.environment}-Backend"
+
+  location            = var.location
+  resource_group_name = module.resource_group.name
+}
+
+module "frontend_identity" {
+  source = "../../modules/managed-identity"
+
+  environment = "${var.environment}-frontend"
 
   location            = var.location
   resource_group_name = module.resource_group.name
@@ -72,14 +81,21 @@ module "managed_identity" {
 resource "azurerm_role_assignment" "keyvault_access" {
   scope                = module.key_vault.id
   role_definition_name = "Key Vault Secrets User"
-  principal_id         = module.managed_identity.principal_id
+  principal_id         = module.Backend_identity.principal_id
 }
 
-module "acr_pull_role" {
+module "acr_pull_backend_role" {
   source = "../../modules/acr-role"
 
   acr_id       = module.container_registry.id
-  principal_id = module.managed_identity.principal_id
+  principal_id = module.Backend_identity.principal_id
+}
+
+module "acr_pull_frontend_role" {
+  source = "../../modules/acr-role"
+
+  acr_id        = module.container_registry.id
+  principal_id  = module.frontend_identity.principal_id
 }
 
 module "postgres" {
@@ -90,6 +106,18 @@ module "postgres" {
   administrator_login = var.postgres_admin_user
   administrator_password = var.postgres_password
   database_name = "geosafe"
+}
+
+module "container_app_frontend" {
+  source = "../../modules/container-app-frontend"
+  image = "${module.container_registry.login_server}/geosafe-frontend:develop"
+
+  environment = var.environment
+  resource_group_name = module.resource_group.name
+  container_app_environment_id = module.container_app_environment.id
+
+  acr_login_server = module.container_registry.login_server
+  identity_id  = module.frontend_identity.id
 }
 
 module "container_app_backend" {
@@ -105,15 +133,15 @@ module "container_app_backend" {
   image = "${module.container_registry.login_server}/geosafe-backend:develop"
 
   key_vault_id = module.key_vault.id
-  identity_id  = module.managed_identity.id
+  identity_id  = module.Backend_identity.id
 
   app_key_secret_id        = module.key_vault.app_key_id
   db_password_secret_id    = module.key_vault.db_password_id
   mapbox_api_key_secret_id = module.key_vault.mapbox_api_key_id
 
-  db_host        = var.db_host
+  db_host        = module.postgres.host
   db_port        = var.db_port
-  db_user        = var.db_user
-  db_database    = var.db_database
+  db_user        = module.postgres.administrator_login
+  db_database    = module.postgres.database
   session_driver = var.session_driver
 }
