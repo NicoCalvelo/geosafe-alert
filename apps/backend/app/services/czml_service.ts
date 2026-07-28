@@ -29,8 +29,7 @@ interface CzmlPacket {
   }
   polygon?: {
     positions:
-      | { cartographicDegrees: number[] }
-      | { interval: string; cartographicDegrees: number[] }[]
+      { cartographicDegrees: number[] } | { interval: string; cartographicDegrees: number[] }[]
     material: {
       solidColor: {
         color:
