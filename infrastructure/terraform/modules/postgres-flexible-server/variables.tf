@@ -1,4 +1,4 @@
-variable "environment" {
+variable "name" {
   type = string
 }
 
@@ -21,4 +21,29 @@ variable "administrator_password" {
 
 variable "database_name" {
   type = string
+}
+
+variable "tags" {
+  type = map(string)
+}
+
+variable "availability_zone" {
+ type = string
+ default = "2"
+}
+
+variable "sku_name" {
+  type = string
+}
+
+variable "backup_retention_days" {
+  type = number
+}
+
+variable "geo_redundant_backup_enabled" {
+  type = bool
+}
+
+variable "public_network_access_enabled" {
+  type = bool
 }

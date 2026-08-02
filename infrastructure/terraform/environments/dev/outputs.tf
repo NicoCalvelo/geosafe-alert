@@ -23,5 +23,5 @@ output "acr_login_server" {
 }
 
 output "frontend_url" {
- value = module.container_app_frontend.fqdn
+  value = module.container_app_frontend.fqdn
 }

@@ -36,6 +36,11 @@ router
 
     // Flux CZML pour Cesium
     router.get('/events/czml', [EventsController, 'streamCzml'])
+
+    // Health check
+    router.get('/health', async ({ response }) => {
+      return response.ok({ status: 'healthy' })
+    })
   })
   .prefix('api')
   .use(middleware.auth())

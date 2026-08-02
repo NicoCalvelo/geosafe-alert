@@ -1,12 +1,31 @@
-variable "environment" {
-  type = string
+variable "project_name" {
+  description = "Nom du projet"
+  type        = string
 }
 
-variable "terraform_user_object_id" {
-  type = string
+
+variable "environment" {
+  description = "Environnement Terraform (dev/prod)"
+  type        = string
+}
+
+variable "frontend_image_tag" {
+  type    = string
+  default = "develop"
+}
+
+
+variable "backend_image_tag" {
+  type    = string
+  default = "develop"
 }
 
 variable "location" {
+  description = "Azure region"
+  type        = string
+}
+
+variable "terraform_user_object_id" {
   type = string
 }
 
@@ -48,4 +67,29 @@ variable "postgres_password" {
 
 variable "github_sp_name" {
   type = string
+}
+
+variable "availability_zone" {
+  type    = string
+  default = "2"
+}
+
+variable "postgres_sku" {
+  type = string
+}
+
+variable "postgres_backup_days" {
+  type = number
+}
+
+variable "postgres_public_access" {
+  type = bool
+}
+
+variable "keyvault_purge_protection" {
+  type = bool
+}
+
+variable "keyvault_public_access" {
+  type = bool
 }

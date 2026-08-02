@@ -1,4 +1,4 @@
 resource "azurerm_resource_group" "this" {
-  name     = "rg-geosafe-${var.environment}"
+  name     = var.name
   location = var.location
 }

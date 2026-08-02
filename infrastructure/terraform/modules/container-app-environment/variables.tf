@@ -1,4 +1,4 @@
-variable "environment" {
+variable "name" {
   type = string
 }
 
@@ -12,4 +12,8 @@ variable "resource_group_name" {
 
 variable "log_analytics_workspace_id" {
   type = string
+}
+
+variable "tags" {
+  type = map(string)
 }

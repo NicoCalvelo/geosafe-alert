@@ -1,26 +1,17 @@
 resource "azurerm_postgresql_flexible_server" "this" {
-  name = "psql-geosafe-${var.environment}"
-
+  name = var.name
   resource_group_name = var.resource_group_name
   location            = var.location
-  zone                = "2"
-
+  zone                = var.availability_zone
   administrator_login = var.administrator_login
   administrator_password = var.administrator_password
-
   version = "16"
-  sku_name = "B_Standard_B1ms"
+  sku_name = var.sku_name
   storage_mb = 32768
-  backup_retention_days = 7
-  geo_redundant_backup_enabled = false
-  public_network_access_enabled = true
-
-
-  tags = {
-    Project     = "GeoSafe"
-    Environment = var.environment
-    ManagedBy   = "Terraform"
-  }
+  backup_retention_days = var.backup_retention_days
+  geo_redundant_backup_enabled = var.geo_redundant_backup_enabled
+  public_network_access_enabled = var.public_network_access_enabled
+  tags = var.tags
 }
 
 

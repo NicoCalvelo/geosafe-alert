@@ -1,153 +1,215 @@
 module "resource_group" {
   source = "../../modules/resource-group"
 
-  environment = var.environment
-  location    = var.location
+  name     = local.names.resource_group
+  location = var.location
 }
-
 
 module "storage_account" {
   source = "../../modules/storage-account"
 
-  environment = var.environment
-  location    = var.location
-
+  name                = local.names.storage_account
   resource_group_name = module.resource_group.name
+  location            = var.location
+  tags                = local.common_tags
 }
-
 
 module "log_analytics" {
   source = "../../modules/log-analytics"
 
-  environment = var.environment
-  location    = var.location
-
+  name                = local.names.log_analytics
+  location            = var.location
   resource_group_name = module.resource_group.name
+  tags                = local.common_tags
 }
-
 
 module "container_registry" {
   source = "../../modules/container-registry"
 
-  environment = var.environment
-  location    = var.location
-
+  name                = local.names.container_registry
   resource_group_name = module.resource_group.name
+  location            = var.location
+  tags                = local.common_tags
 }
-
 
 module "container_app_environment" {
   source = "../../modules/container-app-environment"
 
-  environment = var.environment
-  location    = var.location
-
+  name                       = local.names.container_app_environment
+  location                   = var.location
   resource_group_name        = module.resource_group.name
   log_analytics_workspace_id = module.log_analytics.workspace_id
+  tags                       = local.common_tags
 }
-
 
 module "key_vault" {
   source = "../../modules/key-vault"
 
-  environment              = var.environment
-  location                 = var.location
-  resource_group_name      = module.resource_group.name
-  tenant_id                = var.tenant_id
-  terraform_user_object_id = var.terraform_user_object_id
-
-  app_key        = var.app_key
-  db_password    = var.db_password
-  mapbox_api_key = var.mapbox_api_key
+  name                          = local.names.key_vault
+  location                      = var.location
+  resource_group_name           = module.resource_group.name
+  tenant_id                     = var.tenant_id
+  tags                          = local.common_tags
+  terraform_user_object_id      = var.terraform_user_object_id
+  app_key                       = var.app_key
+  db_password                   = var.db_password
+  mapbox_api_key                = var.mapbox_api_key
+  purge_protection_enabled      = var.keyvault_purge_protection
+  soft_delete_retention_days    = var.postgres_backup_days
+  public_network_access_enabled = var.keyvault_public_access
 }
 
-module "Backend_identity" {
-  source      = "../../modules/managed-identity"
-  environment = "${var.environment}-Backend"
+module "backend_identity" {
+  source = "../../modules/managed-identity"
 
+  name                = local.names.backend_identity
   location            = var.location
   resource_group_name = module.resource_group.name
+  acr_id              = module.container_registry.id
+  keyvault_id         = module.key_vault.id
+  tags                = local.common_tags
 }
 
 module "frontend_identity" {
   source = "../../modules/managed-identity"
 
-  environment = "${var.environment}-frontend"
-
+  name                = local.names.frontend_identity
   location            = var.location
   resource_group_name = module.resource_group.name
-}
-
-resource "azurerm_role_assignment" "keyvault_access" {
-  scope                = module.key_vault.id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = module.Backend_identity.principal_id
+  acr_id              = module.container_registry.id
+  tags                = local.common_tags
 }
 
 module "github_actions_role" {
   source = "../../modules/github-actions-role"
+
   resource_group_id = module.resource_group.resource_group_id
-  github_sp_name = "github-terraform"
-}
-
-module "acr_pull_backend_role" {
-  source = "../../modules/acr-role"
-
-  acr_id       = module.container_registry.id
-  principal_id = module.Backend_identity.principal_id
-}
-
-module "acr_pull_frontend_role" {
-  source = "../../modules/acr-role"
-
-  acr_id        = module.container_registry.id
-  principal_id  = module.frontend_identity.principal_id
+  github_sp_name    = var.github_sp_name
 }
 
 module "postgres" {
   source = "../../modules/postgres-flexible-server"
-  environment = var.environment
-  location = var.location
-  resource_group_name = module.resource_group.name
-  administrator_login = var.postgres_admin_user
-  administrator_password = var.postgres_password
-  database_name = "geosafe"
+
+  name                          = local.names.postgres
+  resource_group_name           = module.resource_group.name
+  location                      = var.location
+  availability_zone             = var.availability_zone
+  administrator_login           = var.postgres_admin_user
+  administrator_password        = var.postgres_password
+  database_name                 = "geosafe"
+  backup_retention_days         = var.postgres_backup_days
+  sku_name                      = var.postgres_sku
+  geo_redundant_backup_enabled  = false
+  public_network_access_enabled = var.postgres_public_access
+  tags                          = local.common_tags
 }
 
 module "container_app_frontend" {
-  source = "../../modules/container-app-frontend"
-  image = "${module.container_registry.login_server}/geosafe-frontend:develop"
+  source = "../../modules/container-app"
 
-  environment = var.environment
-  resource_group_name = module.resource_group.name
-  container_app_environment_id = module.container_app_environment.id
-
-  acr_login_server = module.container_registry.login_server
-  identity_id  = module.frontend_identity.id
-}
-
-module "container_app_backend" {
-  source = "../../modules/container-app-backend"
-
-  environment                  = var.environment
+  name                         = local.names.frontend_app
   resource_group_name          = module.resource_group.name
   container_app_environment_id = module.container_app_environment.id
+  acr_login_server             = module.container_registry.login_server
+  image                        = "${module.container_registry.login_server}/geosafe-frontend:${var.frontend_image_tag}"
+  identity_id                  = module.frontend_identity.id
+  tags                         = local.common_tags
 
-  acr_login_server = module.container_registry.login_server
-  acr_id           = module.container_registry.id
+  container_name = "frontend"
+  target_port    = 80
+  cpu            = 0.5
+  memory         = "1Gi"
+  min_replicas   = 1
+  max_replicas   = 2
+  liveness_probe_enabled = true
+  readiness_probe_enabled = true
+  http_scale_rule_enabled = true
 
-  image = "${module.container_registry.login_server}/geosafe-backend:develop"
+  keyvault_secrets = {}
+}
 
-  key_vault_id = module.key_vault.id
-  identity_id  = module.Backend_identity.id
 
-  app_key_secret_id        = module.key_vault.app_key_id
-  db_password_secret_id    = module.key_vault.db_password_id
-  mapbox_api_key_secret_id = module.key_vault.mapbox_api_key_id
+module "container_app_backend" {
+  source = "../../modules/container-app"
 
-  db_host        = module.postgres.host
-  db_port        = var.db_port
-  db_user        = module.postgres.administrator_login
-  db_database    = module.postgres.database
-  session_driver = var.session_driver
+  name                         = local.names.backend_app
+  resource_group_name          = module.resource_group.name
+  container_app_environment_id = module.container_app_environment.id
+  acr_login_server             = module.container_registry.login_server
+  identity_id                  = module.backend_identity.id
+  image                        = "${module.container_registry.login_server}/geosafe-backend:${var.backend_image_tag}"
+  tags                         = local.common_tags
+
+  container_name = "backend"
+  target_port    = 3333
+  cpu            = 0.5
+  memory         = "1Gi"
+  min_replicas   = 1
+  max_replicas   = 3
+  liveness_probe_enabled = true
+  readiness_probe_enabled = true
+  http_scale_rule_enabled = true
+
+  env = [
+    {
+      name  = "NODE_ENV"
+      value = "production"
+    },
+    {
+      name  = "PORT"
+      value = "3333"
+    },
+    {
+      name  = "HOST"
+      value = "0.0.0.0"
+    },
+    {
+      name        = "APP_KEY"
+      secret_name = "app-key"
+    },
+    {
+      name        = "DB_PASSWORD"
+      secret_name = "db-password"
+    },
+    {
+      name        = "MAPBOX_API_KEY"
+      secret_name = "mapbox-api-key"
+    },
+    {
+      name  = "DB_HOST"
+      value = module.postgres.host
+    },
+    {
+      name  = "DB_PORT"
+      value = var.db_port
+    },
+    {
+      name  = "DB_USER"
+      value = module.postgres.administrator_login
+    },
+    {
+      name  = "DB_DATABASE"
+      value = module.postgres.database
+    },
+    {
+      name  = "SESSION_DRIVER"
+      value = var.session_driver
+    },
+    {
+      name  = "LOG_LEVEL"
+      value = "debug"
+    }
+  ]
+
+  keyvault_secrets = {
+    app-key = {
+      key_vault_secret_id = module.key_vault.app_key_id
+    }
+    db-password = {
+      key_vault_secret_id = module.key_vault.db_password_id
+    }
+    mapbox-api-key = {
+      key_vault_secret_id = module.key_vault.mapbox_api_key_id
+    }
+  }
 }

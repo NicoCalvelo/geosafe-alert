@@ -1,5 +1,5 @@
 data "azuread_service_principal" "github" {
-  display_name = "GeoSafe-GitHub-DEV"
+  display_name = var.github_sp_name
 }
 
 resource "azurerm_role_assignment" "containerapp" {

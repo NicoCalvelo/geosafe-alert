@@ -1,23 +1,14 @@
 resource "azurerm_key_vault" "this" {
-
-  name                = "kv-geosafe-${var.environment}"
+  name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name
-
   tenant_id = var.tenant_id
-
   sku_name = "standard"
-
-  purge_protection_enabled   = false
-  soft_delete_retention_days = 7
-
+  purge_protection_enabled   = var.purge_protection_enabled
+  soft_delete_retention_days = var.soft_delete_retention_days
+  public_network_access_enabled = var.public_network_access_enabled
   rbac_authorization_enabled = true
-
-  tags = {
-    Project     = "GeoSafe"
-    Environment = var.environment
-    ManagedBy   = "Terraform"
-  }
+  tags = var.tags
 }
 
 resource "azurerm_role_assignment" "terraform_kv_admin" {
