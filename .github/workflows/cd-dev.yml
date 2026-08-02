@@ -49,6 +49,13 @@ jobs:
       - name: Verify
         run: |
           az account show
+      - name: Debug Azure
+        run: |
+          az account show
+          az group show --name rg-geosafe-dev
+          az containerapp list \
+            --resource-group rg-geosafe-dev \
+            --output table
 
       # =========================
       # FRONTEND
