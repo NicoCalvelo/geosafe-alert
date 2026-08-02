@@ -49,11 +49,6 @@ jobs:
       - name: Verify
         run: |
           az account show
-      - name: Check frontend app
-        run: |
-          az containerapp show \
-            --name ca-frontend-geosafe-dev \
-            --resource-group rg-geosafe-dev
 
       # =========================
       # FRONTEND

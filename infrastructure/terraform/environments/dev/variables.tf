@@ -45,3 +45,7 @@ variable "postgres_password" {
   type      = string
   sensitive = true
 }
+
+variable "github_sp_name" {
+  type = string
+}

@@ -11,3 +11,5 @@ session_driver = "cookie"
 
 postgres_admin_user = "geosafeadmin"
 postgres_password = "TonMotDePasseFort"
+
+github_sp_name = "github-terraform"

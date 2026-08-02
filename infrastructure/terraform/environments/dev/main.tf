@@ -84,6 +84,12 @@ resource "azurerm_role_assignment" "keyvault_access" {
   principal_id         = module.Backend_identity.principal_id
 }
 
+module "github_actions_role" {
+  source = "../../modules/github-actions-role"
+  resource_group_id = module.resource_group.resource_group_id
+  github_sp_name = "github-terraform"
+}
+
 module "acr_pull_backend_role" {
   source = "../../modules/acr-role"
 
