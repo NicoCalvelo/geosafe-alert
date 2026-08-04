@@ -1,12 +1,12 @@
 module "resource_group" {
-  source = "../../modules/resource-group"
+  source = "../modules/resource-group"
 
   name     = local.names.resource_group
   location = var.location
 }
 
 module "storage_account" {
-  source = "../../modules/storage-account"
+  source = "../modules/storage-account"
 
   name                = local.names.storage_account
   resource_group_name = module.resource_group.name
@@ -15,7 +15,7 @@ module "storage_account" {
 }
 
 module "log_analytics" {
-  source = "../../modules/log-analytics"
+  source = "../modules/log-analytics"
 
   name                = local.names.log_analytics
   location            = var.location
@@ -24,7 +24,7 @@ module "log_analytics" {
 }
 
 module "container_registry" {
-  source = "../../modules/container-registry"
+  source = "../modules/container-registry"
 
   name                = local.names.container_registry
   resource_group_name = module.resource_group.name
@@ -33,7 +33,7 @@ module "container_registry" {
 }
 
 module "container_app_environment" {
-  source = "../../modules/container-app-environment"
+  source = "../modules/container-app-environment"
 
   name                       = local.names.container_app_environment
   location                   = var.location
@@ -43,7 +43,7 @@ module "container_app_environment" {
 }
 
 module "key_vault" {
-  source = "../../modules/key-vault"
+  source = "../modules/key-vault"
 
   name                          = local.names.key_vault
   location                      = var.location
@@ -51,16 +51,16 @@ module "key_vault" {
   tenant_id                     = var.tenant_id
   tags                          = local.common_tags
   terraform_user_object_id      = var.terraform_user_object_id
-  app_key                       = var.app_key
-  db_password                   = var.db_password
-  mapbox_api_key                = var.mapbox_api_key
-  purge_protection_enabled      = var.keyvault_purge_protection
-  soft_delete_retention_days    = var.postgres_backup_days
-  public_network_access_enabled = var.keyvault_public_access
+  app_key                       = var.keyvault.app_key
+  db_password                   = var.keyvault.db_password
+  mapbox_api_key                = var.keyvault.mapbox_api_key
+  purge_protection_enabled      = var.keyvault.purge_protection
+  soft_delete_retention_days    = var.keyvault.soft_delete_days
+  public_network_access_enabled = var.keyvault.public_access
 }
 
 module "backend_identity" {
-  source = "../../modules/managed-identity"
+  source = "../modules/managed-identity"
 
   name                = local.names.backend_identity
   location            = var.location
@@ -71,7 +71,7 @@ module "backend_identity" {
 }
 
 module "frontend_identity" {
-  source = "../../modules/managed-identity"
+  source = "../modules/managed-identity"
 
   name                = local.names.frontend_identity
   location            = var.location
@@ -81,31 +81,31 @@ module "frontend_identity" {
 }
 
 module "github_actions_role" {
-  source = "../../modules/github-actions-role"
+  source = "../modules/github-actions-role"
 
   resource_group_id = module.resource_group.resource_group_id
   github_sp_name    = var.github_sp_name
 }
 
 module "postgres" {
-  source = "../../modules/postgres-flexible-server"
+  source = "../modules/postgres-flexible-server"
 
   name                          = local.names.postgres
   resource_group_name           = module.resource_group.name
   location                      = var.location
-  availability_zone             = var.availability_zone
-  administrator_login           = var.postgres_admin_user
-  administrator_password        = var.postgres_password
-  database_name                 = "geosafe"
-  backup_retention_days         = var.postgres_backup_days
-  sku_name                      = var.postgres_sku
+  availability_zone             = var.postgres.availability_zone
+  administrator_login           = var.postgres.admin_user
+  administrator_password        = var.postgres.password
+  database_name                 = var.postgres.database_name
+  backup_retention_days         = var.postgres.backup_days
+  sku_name                      = var.postgres.sku
   geo_redundant_backup_enabled  = false
-  public_network_access_enabled = var.postgres_public_access
+  public_network_access_enabled = var.postgres.public_access
   tags                          = local.common_tags
 }
 
 module "container_app_frontend" {
-  source = "../../modules/container-app"
+  source = "../modules/container-app"
 
   name                         = local.names.frontend_app
   resource_group_name          = module.resource_group.name
@@ -115,22 +115,22 @@ module "container_app_frontend" {
   identity_id                  = module.frontend_identity.id
   tags                         = local.common_tags
 
-  container_name = "frontend"
-  target_port    = 80
-  cpu            = 0.5
-  memory         = "1Gi"
-  min_replicas   = 1
-  max_replicas   = 2
-  liveness_probe_enabled = true
-  readiness_probe_enabled = true
-  http_scale_rule_enabled = true
+  container_name          = var.frontend.container_name
+  target_port             = var.frontend.target_port
+  cpu                     = var.frontend.cpu
+  memory                  = var.frontend.memory
+  min_replicas            = var.frontend.min_replicas
+  max_replicas            = var.frontend.max_replicas
+  liveness_probe_enabled  = var.liveness_probe_enabled
+  readiness_probe_enabled = var.readiness_probe_enabled
+  http_scale_rule_enabled = var.http_scale_rule_enabled
 
   keyvault_secrets = {}
 }
 
 
 module "container_app_backend" {
-  source = "../../modules/container-app"
+  source = "../modules/container-app"
 
   name                         = local.names.backend_app
   resource_group_name          = module.resource_group.name
@@ -140,28 +140,28 @@ module "container_app_backend" {
   image                        = "${module.container_registry.login_server}/geosafe-backend:${var.backend_image_tag}"
   tags                         = local.common_tags
 
-  container_name = "backend"
-  target_port    = 3333
-  cpu            = 0.5
-  memory         = "1Gi"
-  min_replicas   = 1
-  max_replicas   = 3
-  liveness_probe_enabled = true
-  readiness_probe_enabled = true
-  http_scale_rule_enabled = true
+  container_name          = var.backend.container_name
+  target_port             = var.backend.target_port
+  cpu                     = var.backend.cpu
+  memory                  = var.backend.memory
+  min_replicas            = var.backend.min_replicas
+  max_replicas            = var.backend.max_replicas
+  liveness_probe_enabled  = var.liveness_probe_enabled
+  readiness_probe_enabled = var.readiness_probe_enabled
+  http_scale_rule_enabled = var.http_scale_rule_enabled
 
   env = [
     {
       name  = "NODE_ENV"
-      value = "production"
+      value = var.config_backend.node_env
     },
     {
       name  = "PORT"
-      value = "3333"
+      value = var.config_backend.port
     },
     {
       name  = "HOST"
-      value = "0.0.0.0"
+      value = var.config_backend.host
     },
     {
       name        = "APP_KEY"
@@ -181,7 +181,7 @@ module "container_app_backend" {
     },
     {
       name  = "DB_PORT"
-      value = var.db_port
+      value = var.config_backend.db_port
     },
     {
       name  = "DB_USER"
@@ -193,11 +193,11 @@ module "container_app_backend" {
     },
     {
       name  = "SESSION_DRIVER"
-      value = var.session_driver
+      value = var.config_backend.session_driver
     },
     {
       name  = "LOG_LEVEL"
-      value = "debug"
+      value = var.config_backend.log_level
     }
   ]
 

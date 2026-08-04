@@ -1,25 +1,109 @@
-location           = "spaincentral"
-project_name       = "geosafe"
-environment        = "dev"
+#######################################
+# Projet
+#######################################
+
+project_name = "geosafe"
+environment  = "dev"
+location     = "spaincentral"
+
+
+#######################################
+# Images Docker
+#######################################
+
 frontend_image_tag = "develop"
 backend_image_tag  = "develop"
+
+
+#######################################
+# Azure Active Directory
+#######################################
 
 tenant_id                = "c371d4f5-b34f-4b06-9e66-517fed904220"
 terraform_user_object_id = "c6eb2520-0386-4870-97ed-221eb946cc50"
 
-app_key        = "abcdefghijklmnopqrstuvwxyz123456"
-db_password    = "123456"
-mapbox_api_key = "sk.eyJ1Ijoibmljb2NhbHZlbG8iLCJhIjoiY21yM2xwM2FxMDJnNTJ4cjJuaWs3bzl2byJ9.vUcrkVbmrapWft_KtWVtyw"
-db_port        = "5432"
-session_driver = "cookie"
-
-postgres_admin_user    = "geosafeadmin"
-postgres_password      = "TonMotDePasseFort"
-postgres_sku           = "B_Standard_B1ms"
-postgres_backup_days   = 7
-postgres_public_access = true
-
-keyvault_purge_protection = false
-keyvault_public_access    = true
-
 github_sp_name = "GeoSafe-GitHub-DEV"
+
+
+#######################################
+# PostgreSQL
+#######################################
+
+postgres = {
+  admin_user        = "geosafeadmin"
+  password          = "TonMotDePasseFort"
+  database_name     = "geosafe"
+  port              = "5432"
+  availability_zone = "2"
+  sku               = "B_Standard_B1ms"
+  backup_days       = 7
+  public_access     = true
+}
+
+
+#######################################
+# Key Vault
+#######################################
+
+keyvault = {
+  app_key          = "abcdefghijklmnopqrstuvwxyz123456"
+  db_password      = "123456"
+  mapbox_api_key   = "sk.eyJ1Ijoibmljb2NhbHZlbG8iLCJhIjoiY21yM2xwM2FxMDJnNTJ4cjJuaWs3bzl2byJ9.vUcrkVbmrapWft_KtWVtyw"
+
+  soft_delete_days = 7
+  purge_protection = false
+  public_access    = true
+}
+
+
+#######################################
+# Backend Container App
+#######################################
+
+backend = {
+  container_name = "backend"
+  target_port    = 3333
+  cpu            = 0.5
+  memory         = "1Gi"
+
+  min_replicas = 1
+  max_replicas = 3
+}
+
+
+#######################################
+# Frontend Container App
+#######################################
+
+frontend = {
+  container_name = "frontend"
+  target_port    = 80
+  cpu            = 0.5
+  memory         = "1Gi"
+
+  min_replicas = 1
+  max_replicas = 2
+}
+
+
+#######################################
+# Configuration Backend
+#######################################
+
+config_backend = {
+  node_env       = "production"
+  port           = "3333"
+  host           = "0.0.0.0"
+  db_port        = "5432"
+  session_driver = "cookie"
+  log_level      = "debug"
+}
+
+
+#######################################
+# Container Apps Health Check
+#######################################
+
+liveness_probe_enabled  = true
+readiness_probe_enabled = true
+http_scale_rule_enabled = true

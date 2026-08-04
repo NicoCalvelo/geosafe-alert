@@ -54,8 +54,8 @@ jobs:
           file: infrastructure/docker/frontend/Dockerfile.azure
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:develop
-            ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:dev-${{ github.run_number }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:prod-${{ github.run_number }}
 
 
       # =========================
@@ -64,9 +64,9 @@ jobs:
       - name: Deploy Frontend
         run: |
           az containerapp update \
-            --name ca-frontend-geosafe-dev \
-            --resource-group rg-geosafe-dev \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:develop
+            --name ca-frontend-geosafe-prod \
+            --resource-group rg-geosafe-prod \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:latest
 
       # =========================
       # BACKEND
@@ -78,8 +78,8 @@ jobs:
           file: infrastructure/docker/backend/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:develop
-            ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:dev-${{ github.run_number }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:prod-${{ github.run_number }}
 
       # =========================
       # DEPLOY BACKEND
@@ -87,6 +87,6 @@ jobs:
       - name: Deploy Backend
         run: |
           az containerapp update \
-            --name ca-backend-geosafe-dev \
-            --resource-group rg-geosafe-dev \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:develop
+            --name ca-backend-geosafe-prod \
+            --resource-group rg-geosafe-prod \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:latest

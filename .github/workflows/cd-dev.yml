@@ -79,7 +79,7 @@ jobs:
           az containerapp update \
             --name ca-frontend-geosafe-dev \
             --resource-group rg-geosafe-dev \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:dev-${{ github.run_number }}
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:develop
 
       # =========================
       # BACKEND
