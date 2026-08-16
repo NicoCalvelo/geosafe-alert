@@ -1,4 +1,4 @@
-name: GeoSafe CD DEV
+name: GeoSafe CD DEVELOP
 
 on:
   push:
@@ -16,6 +16,12 @@ env:
   IMAGE_FRONTEND: geosafe-frontend
   IMAGE_BACKEND: geosafe-backend
 
+  RESOURCE_GROUP: rg-geosafe-dev
+
+  FRONTEND_APP: ca-frontend-geosafe-dev
+  BACKEND_APP: ca-backend-geosafe-dev
+
+  MIGRATION_JOB: job-geosafe-migration-dev
 
 jobs:
   docker:
@@ -36,29 +42,31 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # =========================
-      # ACR LOGIN + SELECT SUBSCRIPTION + VERIFY + CHECK FRONTEND APP
+      # AZURE
       # =========================
-      - name: Login to ACR
-        run: |
-          az acr login \
-            --name acrgeosafedev
       - name: Select subscription
         run: |
           az account set \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Verify
-        run: |
-          az account show
-      - name: Debug Azure
+
+      - name: Verify Azure
         run: |
           az account show
           az group show --name rg-geosafe-dev
           az containerapp list \
             --resource-group rg-geosafe-dev \
-            --output table
+            --output table 
 
       # =========================
-      # FRONTEND
+      # ACR LOGIN
+      # =========================
+      - name: Login to ACR
+        run: |
+          az acr login \
+            --name acrgeosafedev
+
+      # =========================
+      # BUILD
       # =========================
       - name: Build & Push Frontend
         uses: docker/build-push-action@v6
@@ -70,20 +78,6 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:develop
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:dev-${{ github.run_number }}
 
-
-      # =========================
-      # DEPLOY FRONTEND
-      # =========================
-      - name: Deploy Frontend
-        run: |
-          az containerapp update \
-            --name ca-frontend-geosafe-dev \
-            --resource-group rg-geosafe-dev \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:develop
-
-      # =========================
-      # BACKEND
-      # =========================
       - name: Build & Push Backend
         uses: docker/build-push-action@v6
         with:
@@ -93,13 +87,85 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:develop
             ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:dev-${{ github.run_number }}
+      
+      # ==========================================================
+      # DATABASE MIGRATION
+      # ==========================================================
 
-      # =========================
-      # DEPLOY BACKEND
-      # =========================
+      - name: Start database migration
+        run: |
+          echo "Starting database migration..."
+
+          az containerapp job start \
+            --name ${{ env.MIGRATION_JOB }} \
+            --resource-group ${{ env.RESOURCE_GROUP }}
+
+
+      # ----------------------------------------------------------
+      # WAIT FOR MIGRATION
+      # ----------------------------------------------------------
+
+      - name: Wait for database migration
+        shell: bash
+        run: |
+
+          echo "Waiting for migration job..."
+
+          for i in {1..30}; do
+
+            echo "Checking migration status... ($i/30)"
+
+            STATUS=$(az containerapp job execution list \
+              --name ${{ env.MIGRATION_JOB }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --query "[0].properties.status" \
+              --output tsv)
+
+            echo "Current status: $STATUS"
+
+            case "$STATUS" in
+
+              Succeeded)
+                echo "Database migration succeeded."
+                exit 0
+                ;;
+
+              Failed)
+                echo "Database migration failed."
+                exit 1
+                ;;
+
+              Running|Pending|Stopped)
+                echo "Migration still running..."
+                ;;
+
+              *)
+                echo "Migration status not yet available..."
+                ;;
+
+            esac
+
+            sleep 10
+
+          done
+
+          echo "Migration timeout."
+          exit 1
+
+      # ----------------------------------------------------------
+      # DEPLOIMENT
+      # ----------------------------------------------------------
+
+      - name: Deploy Frontend
+        run: |
+          az containerapp update \
+            --name ca-frontend-geosafe-dev \
+            --resource-group rg-geosafe-dev \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:dev
+
       - name: Deploy Backend
         run: |
           az containerapp update \
             --name ca-backend-geosafe-dev \
             --resource-group rg-geosafe-dev \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:develop
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:dev
