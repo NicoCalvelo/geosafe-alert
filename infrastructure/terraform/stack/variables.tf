@@ -95,6 +95,7 @@ variable "keyvault" {
     mapbox_api_key   = string
     soft_delete_days = number
     public_access    = bool
+    secret_expiration_date = string
   })
   sensitive = true
 
@@ -104,6 +105,7 @@ variable "keyvault" {
     mapbox_api_key   = ""
     public_access    = true
     soft_delete_days = 7
+    secret_expiration_date = "2027-01-01T00:00:00Z"
   }
 }
 

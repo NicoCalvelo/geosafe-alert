@@ -13,7 +13,7 @@ const dbConfig = defineConfig({
         password: env.get('DB_PASSWORD'),
         database: env.get('DB_DATABASE'),
         ssl: {
-          rejectUnauthorized: false,
+          rejectUnauthorized: true,
         },
       },
       migrations: {

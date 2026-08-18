@@ -48,9 +48,9 @@ keyvault = {
   app_key          = "abcdefghijklmnopqrstuvwxyz123456"
   db_password      = "123456"
   mapbox_api_key   = "sk.eyJ1Ijoibmljb2NhbHZlbG8iLCJhIjoiY21yM2xwM2FxMDJnNTJ4cjJuaWs3bzl2byJ9.vUcrkVbmrapWft_KtWVtyw"
-
   soft_delete_days = 7
   public_access    = true
+  secret_expiration_date = "2027-08-01T00:00:00Z"
 }
 
 
