@@ -40,9 +40,9 @@ postgres = {
 #######################################
 
 keyvault = {
-  app_key = "abcdefghijklmnopqrstuvwxyz123456"
+  app_key = ""
   db_password = "123456"
-  mapbox_api_key = "abcdefghijklmnopqrstuvwxyz123456"
+  mapbox_api_key = ""
   soft_delete_days = 90
   public_access = true
 }
