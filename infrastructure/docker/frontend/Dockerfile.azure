@@ -34,4 +34,6 @@ COPY --from=builder \
 
 EXPOSE 80
 
+USER node
+
 CMD ["nginx", "-g", "daemon off;"]

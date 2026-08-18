@@ -44,6 +44,10 @@ variable "geo_redundant_backup_enabled" {
   type = bool
 }
 
-variable "public_network_access_enabled" {
-  type = bool
+variable "postgres_subnet_id" {
+  type = string
+}
+
+variable "virtual_network_id" {
+  type = string
 }

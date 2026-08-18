@@ -62,7 +62,6 @@ variable "postgres" {
 
   type = object({
     admin_user        = string
-    password          = string
     database_name     = string
     port              = string
     availability_zone = string
@@ -74,7 +73,6 @@ variable "postgres" {
 
   default = {
     admin_user        = "geosafeadmin"
-    password          = "TonMotDePasseFort"
     database_name     = "geosafe"
     port              = "5432"
     availability_zone = "2"
@@ -96,7 +94,6 @@ variable "keyvault" {
     db_password      = string
     mapbox_api_key   = string
     soft_delete_days = number
-    purge_protection = bool
     public_access    = bool
   })
   sensitive = true
@@ -105,7 +102,6 @@ variable "keyvault" {
     app_key          = ""
     db_password      = ""
     mapbox_api_key   = ""
-    purge_protection = false
     public_access    = true
     soft_delete_days = 7
   }
@@ -131,8 +127,8 @@ variable "backend" {
   default = {
     container_name = "backend"
     target_port    = 3333
-    cpu            = 0.5
-    memory         = "1Gi"
+    cpu            = 1.5
+    memory         = "3Gi"
     min_replicas   = 1
     max_replicas   = 3
   }

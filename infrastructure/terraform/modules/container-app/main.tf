@@ -23,6 +23,11 @@ resource "azurerm_container_app" "this" {
       cpu    = var.cpu
       memory = var.memory
 
+      env {
+        name  = "BACKEND_URL"
+        value = var.backend_url
+      }
+
       dynamic "liveness_probe" {
         for_each = var.liveness_probe_enabled ? [1] : []
         content {
@@ -39,7 +44,7 @@ resource "azurerm_container_app" "this" {
         content {
           transport = "HTTP"
           port = var.target_port
-          path = "/"
+          path = "/read"
           interval_seconds = 10
         }
       }
@@ -68,7 +73,7 @@ resource "azurerm_container_app" "this" {
       for_each = var.http_scale_rule_enabled ? [1] : []
       content {
         name = "http-rule"
-        concurrent_requests = 50
+        concurrent_requests = 500
       }
     }
   }
@@ -83,7 +88,7 @@ resource "azurerm_container_app" "this" {
   }
 
   ingress {
-    external_enabled = true
+    external_enabled = var.external_enabled
     target_port = var.target_port
 
     traffic_weight {

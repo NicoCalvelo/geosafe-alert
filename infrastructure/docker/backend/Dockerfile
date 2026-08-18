@@ -19,4 +19,6 @@ RUN pnpm build
 
 EXPOSE 3333
 
+USER nodes
+
 CMD ["node", "build/bin/server.js"]

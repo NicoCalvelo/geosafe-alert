@@ -13,4 +13,6 @@ COPY apps/frontend ./apps/frontend/
 
 RUN pnpm install
 
+USER node
+
 EXPOSE 4200

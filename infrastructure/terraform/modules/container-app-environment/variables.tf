@@ -17,3 +17,7 @@ variable "log_analytics_workspace_id" {
 variable "tags" {
   type = map(string)
 }
+
+variable "infrastructure_subnet_id" {
+  type = string
+}

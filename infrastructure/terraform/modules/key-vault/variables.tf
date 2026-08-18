@@ -37,17 +37,10 @@ variable "tags" {
   type = map(string)
 }
 
-variable "purge_protection_enabled" {
-  type    = bool
-  default = false
-}
-
-
 variable "soft_delete_retention_days" {
   type    = number
   default = 7
 }
-
 
 variable "public_network_access_enabled" {
   type    = bool
