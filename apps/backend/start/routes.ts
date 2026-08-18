@@ -9,6 +9,16 @@ const ProfileController = () => import('#controllers/profile_controller')
 
 router.get('/', [HomeController, 'index'])
 
+// Health check
+router.get('/health', async ({ response }) => {
+  return response.ok({ status: 'healthy' })
+})
+
+//Readness
+router.get('/read', async ({ response }) => {
+  return response.ok({ status: 'ok' })
+})
+
 // Routes publiques d'authentification
 router
   .group(() => {
@@ -36,11 +46,6 @@ router
 
     // Flux CZML pour Cesium
     router.get('/events/czml', [EventsController, 'streamCzml'])
-
-    // Health check
-    router.get('/health', async ({ response }) => {
-      return response.ok({ status: 'healthy' })
-    })
   })
   .prefix('api')
   .use(middleware.auth())
