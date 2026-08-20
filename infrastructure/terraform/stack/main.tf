@@ -105,7 +105,7 @@ module "postgres" {
 
   backup_retention_days        = var.postgres.backup_days
   sku_name                     = var.postgres.sku
-  geo_redundant_backup_enabled = false
+  geo_redundant_backup_enabled = true
 
   postgres_subnet_id = module.virtual_network.postgres_subnet_id
   virtual_network_id = module.virtual_network.id
