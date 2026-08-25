@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import * as Cesium from 'cesium';
 import { environment } from '../../../environments/environment';
+import { IndexZoneGrid } from '../models/index.model';
 
 type CzmlJson = unknown;
 
@@ -8,6 +9,8 @@ type CzmlJson = unknown;
 export class CesiumService {
   private viewer: Cesium.Viewer | null = null;
   private czmlDataSource: Cesium.CzmlDataSource | null = null;
+  private zoneHighlightEntity: Cesium.Entity | null = null;
+  private gridEntities: Cesium.Entity[] = [];
 
   readonly selectedEntity = signal<Cesium.Entity | null>(null);
 
@@ -94,11 +97,89 @@ export class CesiumService {
     return this.czmlDataSource?.entities.values ?? [];
   }
 
+  /**
+   * Highlight a GeoJSON polygon zone on the globe (e.g. on index row hover)
+   */
+  highlightZone(polygon: { coordinates: number[][][] }, color = '#ffff00'): void {
+    if (!this.viewer) return;
+
+    this.clearZoneHighlight();
+
+    const ring = polygon.coordinates[0];
+    const flatDegrees = ring.flatMap(([lng, lat]) => [lng, lat]);
+
+    this.zoneHighlightEntity = this.viewer.entities.add({
+      polygon: {
+        hierarchy: Cesium.Cartesian3.fromDegreesArray(flatDegrees),
+        material: Cesium.Color.fromCssColorString(color).withAlpha(0.35),
+        outline: true,
+        outlineColor: Cesium.Color.fromCssColorString(color),
+      },
+    });
+  }
+
+  clearZoneHighlight(): void {
+    if (this.viewer && this.zoneHighlightEntity) {
+      this.viewer.entities.remove(this.zoneHighlightEntity);
+    }
+    this.zoneHighlightEntity = null;
+  }
+
+  /**
+   * Draw the full risk-index grid over the map. Each cell stores its index
+   * values as an entity property so a click can populate the indices panel.
+   */
+  showGrid(zones: IndexZoneGrid[]): void {
+    if (!this.viewer) return;
+
+    this.hideGrid();
+
+    for (const zone of zones) {
+      const ring = zone.zone.coordinates[0];
+      const flatDegrees = ring.flatMap(([lng, lat]) => [lng, lat]);
+
+      const indicesForPanel = zone.values.map((v) => ({ ...v, zone: zone.zone }));
+
+      // Damier gris clair/foncé pour distinguer les cellules adjacentes
+      const isDark = (zone.cellX + zone.cellY) % 2 === 0;
+      const fillColor = isDark
+        ? Cesium.Color.SLATEGRAY.withAlpha(0.35)
+        : Cesium.Color.LIGHTGRAY.withAlpha(0.2);
+
+      const entity = this.viewer.entities.add({
+        polygon: {
+          hierarchy: Cesium.Cartesian3.fromDegreesArray(flatDegrees),
+          material: fillColor,
+          outline: true,
+          outlineColor: Cesium.Color.LIGHTGRAY.withAlpha(0.9),
+          outlineWidth: 2,
+        },
+        properties: {
+          isGridCell: true,
+          indices: JSON.stringify(indicesForPanel),
+        },
+      });
+
+      this.gridEntities.push(entity);
+    }
+  }
+
+  hideGrid(): void {
+    if (this.viewer) {
+      for (const entity of this.gridEntities) {
+        this.viewer.entities.remove(entity);
+      }
+    }
+    this.gridEntities = [];
+  }
+
   destroy(): void {
     if (this.viewer && !this.viewer.isDestroyed()) {
       this.viewer.destroy();
     }
     this.viewer = null;
     this.czmlDataSource = null;
+    this.zoneHighlightEntity = null;
+    this.gridEntities = [];
   }
 }

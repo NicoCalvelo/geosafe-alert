@@ -7,6 +7,7 @@ const AuthController = () => import('#controllers/auth_controller')
 const EventsController = () => import('#controllers/events_controller')
 const ProfileController = () => import('#controllers/profile_controller')
 const GeocodeController = () => import('#controllers/geocode_controller')
+const IndicesController = () => import('#controllers/indices_controller')
 
 router.get('/', [HomeController, 'index'])
 
@@ -43,6 +44,12 @@ router
 
     // Flux CZML pour Cesium
     router.get('/events/czml', [EventsController, 'streamCzml'])
+
+    // Indices de risque (sécheresse, chaleur, vent, etc.)
+    router.post('/indices/ingest', [IndicesController, 'ingest'])
+    router.get('/indices/types', [IndicesController, 'types'])
+    router.get('/indices/at', [IndicesController, 'at'])
+    router.get('/indices/grid', [IndicesController, 'grid'])
   })
   .prefix('api')
   .use(middleware.auth())

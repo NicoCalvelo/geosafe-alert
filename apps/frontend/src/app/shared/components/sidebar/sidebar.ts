@@ -2,6 +2,7 @@ import { Component, input, output, inject, computed, signal } from '@angular/cor
 import { AuthService } from '../../../core/services/auth.service';
 import { AlertsService } from '../../../core/services/alerts.service';
 import { CesiumService } from '../../../core/services/cesium.service';
+import { IndicesService } from '../../../core/services/indices.service';
 import { RouterLink } from '@angular/router';
 import { AlertCard } from '../alert-card/alert-card';
 
@@ -17,6 +18,7 @@ export class Sidebar {
   private auth = inject(AuthService);
   private alerts = inject(AlertsService);
   private cesium = inject(CesiumService);
+  private indices = inject(IndicesService);
 
   readonly user = this.auth.currentUser;
   readonly alertTypes = this.alerts.alertTypes;
@@ -39,6 +41,9 @@ export class Sidebar {
   filtersChanged = output<void>();
   synced = output<void>();
   syncing = signal(false);
+
+  gridVisible = signal(false);
+  gridLoading = signal(false);
 
   onToggleFilter(code: string): void {
     this.alerts.toggleFilter(code);
@@ -66,12 +71,33 @@ export class Sidebar {
     if (this.syncing()) return;
     this.syncing.set(true);
     try {
-      await this.alerts.ingest();
+      await Promise.all([this.alerts.ingest(), this.indices.ingest()]);
       this.synced.emit();
     } catch (err) {
       console.error('Sync failed:', err);
     } finally {
       this.syncing.set(false);
+    }
+  }
+
+  async onToggleGrid(): Promise<void> {
+    if (this.gridLoading()) return;
+
+    if (this.gridVisible()) {
+      this.cesium.hideGrid();
+      this.gridVisible.set(false);
+      return;
+    }
+
+    this.gridLoading.set(true);
+    try {
+      const zones = await this.indices.fetchGrid();
+      this.cesium.showGrid(zones);
+      this.gridVisible.set(true);
+    } catch (err) {
+      console.error('Failed to load risk grid:', err);
+    } finally {
+      this.gridLoading.set(false);
     }
   }
 
