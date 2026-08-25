@@ -51,13 +51,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
     command: >
       sh -c "
-      pnpm install &&
-      pnpm --filter geosafe-back dev
+      CI=true pnpm install &&
+      pnpm --filter geosafe-back dev &&
+      pnpm --filter geosafe-back migrate:run
       "
-
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3333/health"]
       interval: 10s
@@ -90,7 +89,7 @@ services:
 
     command: >
       sh -c "
-      pnpm install &&
+      CI=true pnpm install &&
       pnpm --filter geosafe-front start --host 0.0.0.0
       "
 

@@ -26,8 +26,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private wsSub: Subscription | null = null;
 
   ngOnInit(): void {
-    // Load CZML once viewer is ready (small delay for Cesium init)
-    setTimeout(() => this.loadAlerts(), 500);
+    void this.initDashboard();
 
     // WebSocket connection
     this.ws.connect();
@@ -53,6 +52,13 @@ export class Dashboard implements OnInit, OnDestroy {
   onSynced(): void {
     this.toast?.show('Sync complete — reloading alerts');
     this.loadAlerts();
+  }
+
+  private async initDashboard(): Promise<void> {
+    await this.alerts.loadAlertTypes();
+
+    // Load CZML once viewer is ready (small delay for Cesium init)
+    setTimeout(() => this.loadAlerts(), 500);
   }
 
   private async loadAlerts(): Promise<void> {

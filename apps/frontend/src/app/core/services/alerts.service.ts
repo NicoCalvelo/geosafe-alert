@@ -15,7 +15,7 @@ export interface CzmlEvent {
 export class AlertsService {
   private http = inject(HttpClient);
 
-  readonly alertTypes = signal<AlertType[]>(ALERT_TYPES);
+  readonly alertTypes = signal<AlertType[]>([]);
   readonly activeFilters = signal<string[]>([]);
 
   readonly activeAlertTypes = computed(() => {
@@ -23,6 +23,21 @@ export class AlertsService {
     if (filters.length === 0) return this.alertTypes();
     return this.alertTypes().filter((t) => filters.includes(t.code));
   });
+
+  async loadAlertTypes(): Promise<void> {
+    try {
+      const types = await firstValueFrom(
+        this.http.get<AlertType[]>(`${environment.apiUrl}/alert-types`)
+      );
+
+      this.alertTypes.set(types);
+      this.activeFilters.set(types.map((type) => type.code));
+    } catch (err) {
+      console.error('Failed to load alert types, using fallback list:', err);
+      this.alertTypes.set(ALERT_TYPES);
+      this.activeFilters.set(ALERT_TYPES.map((type) => type.code));
+    }
+  }
 
   async fetchCzml(filters?: { from?: string; to?: string; alertTypes?: string[] }): Promise<CzmlEvent[]> {
     let params = new HttpParams();
@@ -50,7 +65,7 @@ export class AlertsService {
   }
 
   clearFilters(): void {
-    this.activeFilters.set([]);
+    this.activeFilters.set(this.alertTypes().map((type) => type.code));
   }
 
   async ingest(): Promise<{ message: string }> {
