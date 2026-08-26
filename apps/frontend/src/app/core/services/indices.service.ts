@@ -25,6 +25,10 @@ export class IndicesService {
     return firstValueFrom(this.http.get<IndexZoneGrid[]>(`${this.apiUrl}/grid`));
   }
 
+  async fetchByZone(zoneId: string): Promise<IndexAtAddress[]> {
+    return firstValueFrom(this.http.get<IndexAtAddress[]>(`${this.apiUrl}/zones/${zoneId}`));
+  }
+
   async ingest(): Promise<{ message: string }> {
     return firstValueFrom(this.http.post<{ message: string }>(`${this.apiUrl}/ingest`, {}));
   }

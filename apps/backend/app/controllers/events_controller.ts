@@ -29,6 +29,9 @@ export default class EventsController {
     // 1. Récupérer la source Copernicus
     const copernicusSource = await Source.findByOrFail('key', 'copernicus')
 
+    // Reset complet : les events Copernicus sont régénérés à chaque ingest (données fictives)
+    await Event.query().where('sourceId', copernicusSource.id).delete()
+
     // 2. Pré-charger tous les types d'alerte pour le mapping dynamique
     const allAlertTypes = await AlertType.all()
     const alertTypeMap = new Map(allAlertTypes.map((at) => [at.code, at]))
