@@ -1,16 +1,19 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, effect, inject, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CesiumViewer } from '../../shared/components/cesium-viewer/cesium-viewer';
 import { Sidebar } from '../../shared/components/sidebar/sidebar';
 import { Toast } from '../../shared/components/toast/toast';
-import { SearchBar } from '../../shared/components/search-bar/search-bar';
+import { SearchBar, GeocodeResult } from '../../shared/components/search-bar/search-bar';
+import { IndicesPanel } from '../../shared/components/indices-panel/indices-panel';
 import { CesiumService } from '../../core/services/cesium.service';
 import { AlertsService } from '../../core/services/alerts.service';
 import { WsService } from '../../core/services/ws.service';
+import { IndicesService } from '../../core/services/indices.service';
+import { IndexAtAddress } from '../../core/models/index.model';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CesiumViewer, Sidebar, Toast, SearchBar],
+  imports: [CesiumViewer, Sidebar, Toast, SearchBar, IndicesPanel],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -18,13 +21,34 @@ export class Dashboard implements OnInit, OnDestroy {
   private cesium = inject(CesiumService);
   private alerts = inject(AlertsService);
   private ws = inject(WsService);
+  private indicesService = inject(IndicesService);
 
   @ViewChild(Toast) toast!: Toast;
 
   sidebarCollapsed = signal(false);
   loading = signal(false);
 
+  indicesPanelVisible = signal(false);
+  indices = signal<IndexAtAddress[]>([]);
+  indicesLoading = signal(false);
+  selectedAddressLabel = signal<string | null>(null);
+
   private wsSub: Subscription | null = null;
+
+  constructor() {
+    // Grid cell entities carry their indices as a JSON property (see cesium.service.ts#showGrid)
+    effect(() => {
+      const entity = this.cesium.selectedEntity();
+      const isGridCell = entity?.properties?.['isGridCell']?.getValue();
+      if (!isGridCell) return;
+
+      const indices: IndexAtAddress[] = JSON.parse(entity!.properties!['indices'].getValue());
+      this.selectedAddressLabel.set('Grid cell');
+      this.indices.set(indices);
+      this.indicesLoading.set(false);
+      this.indicesPanelVisible.set(true);
+    });
+  }
 
   ngOnInit(): void {
     void this.initDashboard();
@@ -53,6 +77,36 @@ export class Dashboard implements OnInit, OnDestroy {
   onSynced(): void {
     this.toast?.show('Sync complete — reloading alerts');
     this.loadAlerts();
+  }
+
+  async onAddressSelected(result: GeocodeResult): Promise<void> {
+    this.cesium.flyToLocation(result.lat, result.lng);
+
+    this.selectedAddressLabel.set(result.name);
+    this.indicesPanelVisible.set(true);
+    this.indicesLoading.set(true);
+    try {
+      const indices = await this.indicesService.fetchAt(result.lat, result.lng);
+      this.indices.set(indices);
+    } catch (err) {
+      console.error('Failed to fetch indices:', err);
+      this.indices.set([]);
+    } finally {
+      this.indicesLoading.set(false);
+    }
+  }
+
+  onIndicesPanelClosed(): void {
+    this.indicesPanelVisible.set(false);
+    this.cesium.clearZoneHighlight();
+  }
+
+  onIndexHover(index: IndexAtAddress | null): void {
+    if (index) {
+      this.cesium.highlightZone(index.zone, index.color ?? undefined);
+    } else {
+      this.cesium.clearZoneHighlight();
+    }
   }
 
   private async initDashboard(): Promise<void> {

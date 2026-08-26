@@ -48,6 +48,27 @@
     </div>
   }
 
+  <!-- Risk index grid -->
+  <div class="px-4 py-3 border-b border-gray-700 shrink-0">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Indices de risque</h2>
+      <button
+        type="button"
+        (click)="onToggleGrid()"
+        [disabled]="gridLoading()"
+        class="text-[11px] px-2.5 py-1 rounded-full border transition-colors disabled:opacity-50"
+        [class.text-white]="gridVisible()"
+        [class.border-transparent]="gridVisible()"
+        [class.bg-blue-600]="gridVisible()"
+        [class.text-gray-300]="!gridVisible()"
+        [class.border-gray-600]="!gridVisible()"
+        [attr.aria-pressed]="gridVisible()"
+      >
+        {{ gridLoading() ? 'Loading...' : (gridVisible() ? 'On' : 'Off') }}
+      </button>
+    </div>
+  </div>
+
   <!-- Filters -->
   <div class="px-4 py-3 border-b border-gray-700 shrink-0">
     <div class="flex items-center justify-between mb-2">

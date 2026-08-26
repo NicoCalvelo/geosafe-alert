@@ -32,6 +32,17 @@
 
     <!-- Cesium Globe -->
     <app-cesium-viewer />
+
+    <!-- Indices panel (shown after an address is selected) -->
+    @if (indicesPanelVisible()) {
+      <app-indices-panel
+        [indices]="indices()"
+        [loading]="indicesLoading()"
+        [addressLabel]="selectedAddressLabel()"
+        (closed)="onIndicesPanelClosed()"
+        (indexHover)="onIndexHover($event)"
+      />
+    }
   </div>
 </div>
 
