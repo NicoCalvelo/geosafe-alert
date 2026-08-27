@@ -38,3 +38,18 @@ export interface IndexZoneGrid {
   zone: GeoJSONPolygon;
   values: ZoneIndexValue[];
 }
+
+export interface ZoneAlert {
+  id: string;
+  userId: string;
+  zoneId: string;
+  kind: 'index' | 'event';
+  indexTypeId: number | null;
+  eventId: string | null;
+  value: number | null;
+  message: string;
+  read: boolean;
+  alertDate: string | null;
+  createdAt: string;
+}
+

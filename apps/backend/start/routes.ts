@@ -8,6 +8,8 @@ const EventsController = () => import('#controllers/events_controller')
 const ProfileController = () => import('#controllers/profile_controller')
 const GeocodeController = () => import('#controllers/geocode_controller')
 const IndicesController = () => import('#controllers/indices_controller')
+const ZoneSubscriptionsController = () => import('#controllers/zone_subscriptions_controller')
+const ZoneAlertsController = () => import('#controllers/zone_alerts_controller')
 
 router.get('/', [HomeController, 'index'])
 
@@ -49,7 +51,17 @@ router
     router.post('/indices/ingest', [IndicesController, 'ingest'])
     router.get('/indices/types', [IndicesController, 'types'])
     router.get('/indices/at', [IndicesController, 'at'])
+    router.get('/indices/zones/:zoneId', [IndicesController, 'byZone'])
     router.get('/indices/grid', [IndicesController, 'grid'])
+
+    // Abonnements à une zone de la grille
+    router.get('/zones/subscriptions', [ZoneSubscriptionsController, 'mine'])
+    router.post('/zones/:zoneId/subscribe', [ZoneSubscriptionsController, 'subscribe'])
+    router.delete('/zones/:zoneId/subscribe', [ZoneSubscriptionsController, 'unsubscribe'])
+
+    // Alertes déclenchées sur les zones suivies
+    router.get('/zone-alerts', [ZoneAlertsController, 'list'])
+    router.post('/zone-alerts/check', [ZoneAlertsController, 'check'])
   })
   .prefix('api')
   .use(middleware.auth())

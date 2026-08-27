@@ -35,31 +35,37 @@ export default class IndicesService {
       indexTypes.push(await IndexType.updateOrCreate({ code: def.code }, def))
     }
 
-    // 2. Reset complet des zones (cascade sur index_values)
-    await knex.raw('TRUNCATE TABLE index_zones CASCADE')
+    // 2. La grille de zones n'est générée qu'une seule fois : sa géométrie doit rester
+    // stable entre deux syncs pour ne pas casser les abonnements (zone_subscriptions).
+    const { rows: existing } = await knex.raw('SELECT id FROM index_zones LIMIT 1')
+    if (existing.length === 0) {
+      const zoneRows: { cell_x: number; cell_y: number; geom: any }[] = []
+      let cellX = 0
+      for (let lon = FRANCE_BBOX.minLon; lon < FRANCE_BBOX.maxLon; lon += CELL_SIZE_DEG, cellX++) {
+        let cellY = 0
+        for (let lat = FRANCE_BBOX.minLat; lat < FRANCE_BBOX.maxLat; lat += CELL_SIZE_DEG, cellY++) {
+          const lon2 = lon + CELL_SIZE_DEG
+          const lat2 = lat + CELL_SIZE_DEG
+          const wkt = `POLYGON((${lon} ${lat}, ${lon2} ${lat}, ${lon2} ${lat2}, ${lon} ${lat2}, ${lon} ${lat}))`
 
-    // 3. Génération de la grille de zones sur la France
-    const zoneRows: { cell_x: number; cell_y: number; geom: any }[] = []
-    let cellX = 0
-    for (let lon = FRANCE_BBOX.minLon; lon < FRANCE_BBOX.maxLon; lon += CELL_SIZE_DEG, cellX++) {
-      let cellY = 0
-      for (let lat = FRANCE_BBOX.minLat; lat < FRANCE_BBOX.maxLat; lat += CELL_SIZE_DEG, cellY++) {
-        const lon2 = lon + CELL_SIZE_DEG
-        const lat2 = lat + CELL_SIZE_DEG
-        const wkt = `POLYGON((${lon} ${lat}, ${lon2} ${lat}, ${lon2} ${lat2}, ${lon} ${lat2}, ${lon} ${lat}))`
-
-        zoneRows.push({ cell_x: cellX, cell_y: cellY, geom: st.geomFromText(wkt, 4326) })
+          zoneRows.push({ cell_x: cellX, cell_y: cellY, geom: st.geomFromText(wkt, 4326) })
+        }
       }
+
+      await knex('index_zones').insert(zoneRows).onConflict(['cell_x', 'cell_y']).ignore()
     }
 
-    const insertedZones = await knex('index_zones').insert(zoneRows).returning('id')
+    const zones = await knex('index_zones').select('id')
 
-    // 4. Valeur aléatoire fictive par zone et par type d'indice
+    // 3. Seules les valeurs sont réinitialisées à chaque sync (simule l'évolution du risque)
+    await knex('index_values').del()
+
     const valueRows: { zone_id: string; index_type_id: number; value: number; level: string }[] =
       []
-    for (const zone of insertedZones) {
+    for (const zone of zones) {
       for (const type of indexTypes) {
-        const value = Math.round(Math.random() * 10000) / 100
+        // Random au carré : favorise les valeurs basses, rend le 100 rare
+        const value = Math.round(Math.pow(Math.random(), 2) * 10000) / 100
         valueRows.push({
           zone_id: zone.id,
           index_type_id: type.id,
@@ -71,6 +77,6 @@ export default class IndicesService {
 
     await knex('index_values').insert(valueRows)
 
-    return { types: indexTypes.length, zones: insertedZones.length, values: valueRows.length }
+    return { types: indexTypes.length, zones: zones.length, values: valueRows.length }
   }
 }

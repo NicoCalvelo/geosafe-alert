@@ -10,9 +10,12 @@ export class IndicesPanel {
   indices = input<IndexAtAddress[]>([]);
   loading = input<boolean>(false);
   addressLabel = input<string | null>(null);
+  zoneId = input<string | null>(null);
+  subscribed = input<boolean>(false);
 
   closed = output<void>();
   indexHover = output<IndexAtAddress | null>();
+  subscribeToggled = output<void>();
 
   onHover(index: IndexAtAddress | null): void {
     this.indexHover.emit(index);
@@ -20,5 +23,9 @@ export class IndicesPanel {
 
   onClose(): void {
     this.closed.emit();
+  }
+
+  onToggleSubscribe(): void {
+    this.subscribeToggled.emit();
   }
 }

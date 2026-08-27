@@ -44,7 +44,27 @@ export default class IndicesController {
       .where(st.within(userLocation, 'index_zones.geom'))
       .orderBy('index_types.label', 'asc')
 
-    return response.ok(results)
+    return response.ok(results.map((r) => ({ ...r, zone: JSON.parse(r.zone) })))
+  }
+
+  public async byZone({ params, response }: HttpContext) {
+    const results = await db
+      .from('index_zones')
+      .join('index_values', 'index_values.zone_id', 'index_zones.id')
+      .join('index_types', 'index_types.id', 'index_values.index_type_id')
+      .select(
+        'index_types.code',
+        'index_types.label',
+        'index_types.icon',
+        'index_types.color',
+        'index_values.value',
+        'index_values.level'
+      )
+      .select(st.asGeoJSON('index_zones.geom').as('zone'))
+      .where('index_zones.id', params.zoneId)
+      .orderBy('index_types.label', 'asc')
+
+    return response.ok(results.map((r) => ({ ...r, zone: JSON.parse(r.zone) })))
   }
 
   public async grid({ response }: HttpContext) {
@@ -65,6 +85,7 @@ export default class IndicesController {
       )
       .select(st.asGeoJSON('index_zones.geom').as('geom'))
       .orderBy('index_zones.id')
+      .orderBy('index_types.label', 'asc')
 
     // Regrouper les lignes plates (zone x indice) par zone
     const zonesMap = new Map<string, any>()
