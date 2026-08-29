@@ -12,7 +12,7 @@ Write-Host "================================="
 
 
 
-$TerraformPath = "../environments/control"
+$TerraformPath = "C:\Users\cabro\Desktop\projet\infrastructure\terraform\bootstrap\terraform-state"
 
 if (!(Test-Path $TerraformPath)) {
     Write-Error "L'environnement control n'existe pas : $TerraformPath"
