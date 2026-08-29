@@ -12,17 +12,17 @@ terraform {
 provider "azurerm" {
   features {}
 }
-# nosemgrep: terraform.azure.security.storage.storage-queue-services-logging.storage-queue-services-logging
-# Exception justifiée : ce Storage Account est exclusivement utilisé comme backend
-# Blob Storage pour le Terraform State. Azure Queue Storage n'est pas utilisé par
-# GeoSafe ni par le backend Terraform ; l'activation du Storage Analytics logging
-# pour Queue n'apporterait donc aucune couverture de logs utile.
+
 resource "azurerm_resource_group" "terraform_state" {
   name     = var.resource_group_name
   location = var.location
 }
 
-resource "azurerm_storage_account" "terraform_state" {
+# Exception justifiée : ce Storage Account est exclusivement utilisé comme backend
+# Blob Storage pour le Terraform State. Azure Queue Storage n'est pas utilisé par
+# GeoSafe ni par le backend Terraform ; le logging spécifique au service Queue
+# n'est donc pas applicable à cette ressource.
+resource "azurerm_storage_account" "terraform_state" { # nosemgrep: terraform.azure.security.storage.storage-queue-services-logging.storage-queue-services-logging
   name                     = var.storage_account_name
   resource_group_name      = azurerm_resource_group.terraform_state.name
   location                 = azurerm_resource_group.terraform_state.location
