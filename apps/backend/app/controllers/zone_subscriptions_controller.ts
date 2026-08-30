@@ -23,10 +23,7 @@ export default class ZoneSubscriptionsController {
   public async unsubscribe({ auth, params, response }: HttpContext) {
     const user = auth.getUserOrFail()
 
-    await ZoneSubscription.query()
-      .where('userId', user.id)
-      .where('zoneId', params.zoneId)
-      .delete()
+    await ZoneSubscription.query().where('userId', user.id).where('zoneId', params.zoneId).delete()
 
     return response.ok({ message: 'Unsubscribed' })
   }
