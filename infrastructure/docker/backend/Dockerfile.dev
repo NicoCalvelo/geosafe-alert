@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN apk add --no-cache postgresql-client
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 
 COPY pnpm-lock.yaml ./
 COPY pnpm-workspace.yaml ./
@@ -18,6 +18,8 @@ RUN pnpm install --frozen-lockfile
 WORKDIR /app/apps/backend
 
 RUN pnpm build
+
+RUN chown -R node:node /app
 
 EXPOSE 3333
 
