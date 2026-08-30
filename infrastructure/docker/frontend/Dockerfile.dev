@@ -13,4 +13,10 @@ COPY apps/frontend ./apps/frontend/
 
 RUN pnpm install
 
+WORKDIR /app/apps/frontend
+
 EXPOSE 4200
+
+USER node
+
+CMD ["pnpm", "dev"]

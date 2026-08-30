@@ -1,0 +1,95 @@
+#######################################
+# Projet
+#######################################
+
+project_name = "geosafe"
+environment  = "prod"
+location     = "northeurope"
+
+#######################################
+# Images Docker
+#######################################
+
+frontend_image_tag = "latest"
+backend_image_tag  = "latest"
+
+#######################################
+# Azure Active Directory
+#######################################
+
+tenant_id                = "c371d4f5-b34f-4b06-9e66-517fed904220"
+terraform_user_object_id = "c6eb2520-0386-4870-97ed-221eb946cc50"
+github_sp_name = "GeoSafe-GitHub-DEV"
+
+#######################################
+# PostgreSQL
+#######################################
+
+postgres = {
+  admin_user = "geosafeadmin"
+  database_name = "geosafe"
+  port = "5432"
+  availability_zone = "2"
+  sku = "B_Standard_B2s"
+  backup_days = 14
+  public_access = false
+}
+
+#######################################
+# Key Vault
+#######################################
+
+keyvault = {
+  app_key = ""
+  db_password = "123456"
+  mapbox_api_key = ""
+  soft_delete_days = 90
+  public_access = true
+}
+
+
+#######################################
+# Backend Container App
+#######################################
+
+backend = {
+  container_name = "backend"
+  target_port = 3333
+  cpu = 1
+  memory = "2Gi"
+  min_replicas = 2
+  max_replicas = 10
+}
+
+#######################################
+# Frontend Container App
+#######################################
+
+frontend = {
+  container_name = "frontend"
+  target_port = 80
+  cpu = 1
+  memory = "2Gi"
+  min_replicas = 2
+  max_replicas = 5
+}
+
+#######################################
+# Configuration Backend
+#######################################
+
+config_backend = {
+  node_env = "production"
+  port = "3333"
+  host = "0.0.0.0"
+  db_port = "5432"
+  session_driver = "cookie"
+  log_level = "info"
+}
+
+#######################################
+# Container Apps Health Check
+#######################################
+liveness_probe_enabled = true
+readiness_probe_enabled = true
+http_scale_rule_enabled = true

@@ -2,15 +2,21 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@9 --activate
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-COPY pnpm-lock.yaml .
-COPY pnpm-workspace.yaml .
-COPY package.json .
-COPY turbo.json .
+COPY pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
+COPY package.json ./
+COPY turbo.json ./
 
-COPY apps/frontend/package.json ./apps/frontend/
+COPY apps/frontend ./apps/frontend/
 
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
+
+WORKDIR /app/apps/frontend
 
 EXPOSE 4200
+
+USER node
+
+CMD ["pnpm", "dev"]
