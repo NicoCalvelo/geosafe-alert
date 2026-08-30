@@ -1,13 +1,9 @@
-# On part de l'image PostGIS officielle (version 16)
 FROM postgis/postgis:16-3.4
 
-# Métadonnées
-LABEL description="Base de données PostGIS pré-configurée pour le cours GeoSafe"
-LABEL maintainer="CALVELO Nicolas"
+LABEL description="GeoSafe PostGIS production DB"
 
-# On définit les variables d'environnement par défaut
-ENV POSTGRES_USER=root
-ENV POSTGRES_PASSWORD=123456
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=CHANGE_ME
 ENV POSTGRES_DB=geosafe
 
 EXPOSE 5432
