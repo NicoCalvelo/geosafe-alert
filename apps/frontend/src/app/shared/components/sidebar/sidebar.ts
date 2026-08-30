@@ -45,6 +45,11 @@ export class Sidebar {
     this.filtersChanged.emit();
   }
 
+  onResetFilters(): void {
+    this.alerts.clearFilters();
+    this.filtersChanged.emit();
+  }
+
   isFilterActive(code: string): boolean {
     return this.activeFilters().includes(code);
   }
