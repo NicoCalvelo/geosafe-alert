@@ -161,11 +161,11 @@ jobs:
           az containerapp update \
             --name ca-frontend-geosafe-dev \
             --resource-group rg-geosafe-dev \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:develop
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:dev-${{ github.run_number }}
 
       - name: Deploy Backend
         run: |
           az containerapp update \
             --name ca-backend-geosafe-dev \
             --resource-group rg-geosafe-dev \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:develop
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:dev-${{ github.run_number }}
