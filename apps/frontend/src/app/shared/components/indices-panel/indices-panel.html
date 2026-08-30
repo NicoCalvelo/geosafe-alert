@@ -1,0 +1,32 @@
+<div class="indices-panel">
+  <div class="indices-panel-header">
+    <span>Indices @if (addressLabel()) { <span class="address">— {{ addressLabel() }}</span> }</span>
+    <button type="button" (click)="onClose()" aria-label="Close">✕</button>
+  </div>
+
+  @if (zoneId()) {
+    <button type="button" class="indices-subscribe-btn" (click)="onToggleSubscribe()">
+      {{ subscribed() ? '★ Subscribed to this zone' : '☆ Subscribe to this zone' }}
+    </button>
+  }
+
+  @if (loading()) {
+    <div class="indices-panel-status">Loading indices...</div>
+  } @else if (indices().length === 0) {
+    <div class="indices-panel-status">No index data for this location.</div>
+  } @else {
+    <ul class="indices-list">
+      @for (index of indices(); track index.code) {
+        <li
+          class="indices-row level-{{ index.level }}"
+          (mouseenter)="onHover(index)"
+          (mouseleave)="onHover(null)"
+        >
+          <span class="indices-row-label" [style.color]="index.color ?? '#ffffff'">{{ index.label }}</span>
+          <span class="indices-row-value">{{ index.value }}</span>
+          <span class="indices-row-level">{{ index.level }}</span>
+        </li>
+      }
+    </ul>
+  }
+</div>

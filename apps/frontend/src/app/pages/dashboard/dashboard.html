@@ -5,10 +5,14 @@
     (toggled)="toggleSidebar()"
     (filtersChanged)="onFiltersChanged()"
     (synced)="onSynced()"
+    (zoneAlertSelected)="onZoneAlertClicked($event)"
   />
 
   <!-- Main area -->
   <div class="flex-1 relative">
+    <!-- Search bar -->
+    <app-search-bar (addressSelected)="onAddressSelected($event)" />
+
     <!-- Toggle sidebar button (visible when collapsed) -->
     @if (sidebarCollapsed()) {
       <button
@@ -29,6 +33,20 @@
 
     <!-- Cesium Globe -->
     <app-cesium-viewer />
+
+    <!-- Indices panel (shown after an address is selected) -->
+    @if (indicesPanelVisible()) {
+      <app-indices-panel
+        [indices]="indices()"
+        [loading]="indicesLoading()"
+        [addressLabel]="selectedAddressLabel()"
+        [zoneId]="selectedZoneId()"
+        [subscribed]="selectedZoneId() ? subscribedZoneIds().has(selectedZoneId()!) : false"
+        (closed)="onIndicesPanelClosed()"
+        (indexHover)="onIndexHover($event)"
+        (subscribeToggled)="onToggleSubscribe()"
+      />
+    }
   </div>
 </div>
 

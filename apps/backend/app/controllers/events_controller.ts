@@ -29,6 +29,9 @@ export default class EventsController {
     // 1. Récupérer la source Copernicus
     const copernicusSource = await Source.findByOrFail('key', 'copernicus')
 
+    // Reset complet : les events Copernicus sont régénérés à chaque ingest (données fictives)
+    await Event.query().where('sourceId', copernicusSource.id).delete()
+
     // 2. Pré-charger tous les types d'alerte pour le mapping dynamique
     const allAlertTypes = await AlertType.all()
     const alertTypeMap = new Map(allAlertTypes.map((at) => [at.code, at]))
@@ -138,7 +141,8 @@ export default class EventsController {
   }
 
   public async streamCzml({ request, response }: HttpContext) {
-    const { from, to, alertTypes } = await request.validateUsing(czmlQueryValidator)
+    const { from, to, alertTypes, lat, lon, radius } =
+      await request.validateUsing(czmlQueryValidator)
 
     //const knex = db.connection().getWriteClient()
 
@@ -169,6 +173,20 @@ export default class EventsController {
     }
     if (alertTypes && alertTypes.length > 0) {
       query = query.whereIn('alert_types.code', alertTypes)
+    }
+
+    // Spatial filtering by proximity
+    if (lat !== undefined && lon !== undefined) {
+      const searchRadius = (radius || 5) * 1000 // Convert km to meters
+      const userLocation = st.geomFromText(`POINT(${lon} ${lat})`, 4326)
+
+      query = query.where(
+        st.dwithin(
+          knex.raw('events.geom::geography'),
+          knex.raw('?::geography', [userLocation]),
+          searchRadius
+        )
+      )
     }
 
     query = query.orderBy('events.event_time', 'asc')
