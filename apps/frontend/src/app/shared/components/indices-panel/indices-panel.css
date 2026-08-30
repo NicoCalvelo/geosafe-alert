@@ -3,22 +3,24 @@
   top: 1rem;
   right: 1rem;
   z-index: 10;
-  width: 280px;
-  background: rgba(31, 41, 55, 0.85);
-  backdrop-filter: blur(4px);
-  border-radius: 0.5rem;
+  width: 300px;
+  background: linear-gradient(170deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.9));
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.9rem;
   color: #fff;
   font-size: 0.875rem;
   overflow: hidden;
+  box-shadow: 0 24px 40px rgba(2, 6, 23, 0.38);
 }
 
 .indices-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.75rem;
+  padding: 0.7rem 0.9rem;
   font-weight: 600;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.28);
 }
 
 .indices-panel-header .address {
@@ -28,31 +30,35 @@
 
 .indices-panel-header button {
   background: none;
-  border: none;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.4rem;
   color: inherit;
   cursor: pointer;
+  width: 1.6rem;
+  height: 1.6rem;
 }
 
 .indices-panel-status {
-  padding: 0.75rem;
+  padding: 0.95rem;
   opacity: 0.7;
 }
 
 .indices-subscribe-btn {
   display: block;
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  background: rgba(255, 255, 255, 0.06);
+  padding: 0.55rem 0.9rem;
+  background: rgba(148, 163, 184, 0.08);
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.24);
   color: #ffd54a;
   font-size: 0.8rem;
   text-align: left;
   cursor: pointer;
+  transition: background-color 160ms ease;
 }
 
 .indices-subscribe-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(148, 163, 184, 0.16);
 }
 
 .indices-list {
@@ -66,13 +72,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.65rem 0.9rem;
   cursor: default;
   border-left: 3px solid transparent;
+  transition: background-color 160ms ease;
 }
 
 .indices-row:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(45, 212, 191, 0.14);
 }
 
 .indices-row-label {
@@ -87,8 +94,9 @@
 .indices-row-level {
   text-transform: uppercase;
   font-size: 0.7rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 0.25rem;
+  letter-spacing: 0.05em;
+  padding: 0.18rem 0.45rem;
+  border-radius: 0.35rem;
   opacity: 0.9;
 }
 
@@ -96,3 +104,12 @@
 .level-medium .indices-row-level { background: #8a6d1a; }
 .level-high .indices-row-level { background: #8a3d1a; }
 .level-extreme .indices-row-level { background: #8a1a1a; }
+
+@media (max-width: 640px) {
+  .indices-panel {
+    width: calc(100% - 2rem);
+    right: 1rem;
+    top: auto;
+    bottom: 1rem;
+  }
+}
