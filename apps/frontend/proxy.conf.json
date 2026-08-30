@@ -1,6 +1,6 @@
 {
   "/api": {
-    "target": "http://localhost:3333",
+    "target": "http://ca-backend-geosafe-dev.lemonstone-91fbb678.spaincentral.azurecontainerapps.io",
     "secure": false,
     "changeOrigin": true
   }

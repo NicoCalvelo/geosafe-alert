@@ -42,8 +42,6 @@ export default class extends BaseSchema {
   async down() {
     await this.db.rawQuery(`DROP TABLE IF EXISTS zone_alerts CASCADE`)
     await this.db.rawQuery(`DROP TABLE IF EXISTS zone_subscriptions CASCADE`)
-    await this.db.rawQuery(
-      `ALTER TABLE index_zones DROP CONSTRAINT IF EXISTS uq_index_zones_cell`
-    )
+    await this.db.rawQuery(`ALTER TABLE index_zones DROP CONSTRAINT IF EXISTS uq_index_zones_cell`)
   }
 }

@@ -43,7 +43,11 @@ export default class IndicesService {
       let cellX = 0
       for (let lon = FRANCE_BBOX.minLon; lon < FRANCE_BBOX.maxLon; lon += CELL_SIZE_DEG, cellX++) {
         let cellY = 0
-        for (let lat = FRANCE_BBOX.minLat; lat < FRANCE_BBOX.maxLat; lat += CELL_SIZE_DEG, cellY++) {
+        for (
+          let lat = FRANCE_BBOX.minLat;
+          lat < FRANCE_BBOX.maxLat;
+          lat += CELL_SIZE_DEG, cellY++
+        ) {
           const lon2 = lon + CELL_SIZE_DEG
           const lat2 = lat + CELL_SIZE_DEG
           const wkt = `POLYGON((${lon} ${lat}, ${lon2} ${lat}, ${lon2} ${lat2}, ${lon} ${lat2}, ${lon} ${lat}))`
@@ -60,8 +64,7 @@ export default class IndicesService {
     // 3. Seules les valeurs sont réinitialisées à chaque sync (simule l'évolution du risque)
     await knex('index_values').del()
 
-    const valueRows: { zone_id: string; index_type_id: number; value: number; level: string }[] =
-      []
+    const valueRows: { zone_id: string; index_type_id: number; value: number; level: string }[] = []
     for (const zone of zones) {
       for (const type of indexTypes) {
         // Random au carré : favorise les valeurs basses, rend le 100 rare

@@ -13,6 +13,16 @@ const ZoneAlertsController = () => import('#controllers/zone_alerts_controller')
 
 router.get('/', [HomeController, 'index'])
 
+// Health check
+router.get('/health', async ({ response }) => {
+  return response.ok({ status: 'healthy' })
+})
+
+//Readness
+router.get('/read', async ({ response }) => {
+  return response.ok({ status: 'ok' })
+})
+
 // Routes publiques d'authentification
 router
   .group(() => {
