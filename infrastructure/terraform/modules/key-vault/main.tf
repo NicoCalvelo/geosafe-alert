@@ -13,6 +13,7 @@ resource "azurerm_key_vault" "this" {
   network_acls {
     default_action = "Deny"
     bypass         = "AzureServices"
+    ip_rules       = var.allowed_ip_addresses
   }
 }
 
@@ -28,6 +29,10 @@ resource "azurerm_key_vault_secret" "app_key" {
   key_vault_id = azurerm_key_vault.this.id
   content_type = "application-secret"
   expiration_date = var.secret_expiration_date
+
+  depends_on = [
+    azurerm_role_assignment.terraform_kv_admin
+  ]
 }
 
 resource "azurerm_key_vault_secret" "db_password" {
@@ -36,6 +41,10 @@ resource "azurerm_key_vault_secret" "db_password" {
   key_vault_id = azurerm_key_vault.this.id
   content_type = "application-secret"
   expiration_date = var.secret_expiration_date
+
+  depends_on = [
+    azurerm_role_assignment.terraform_kv_admin
+  ]
 }
 
 resource "azurerm_key_vault_secret" "mapbox_api_key" {
@@ -44,4 +53,8 @@ resource "azurerm_key_vault_secret" "mapbox_api_key" {
   key_vault_id = azurerm_key_vault.this.id
   content_type = "application-secret"
   expiration_date = var.secret_expiration_date
+
+  depends_on = [
+    azurerm_role_assignment.terraform_kv_admin
+  ]
 }

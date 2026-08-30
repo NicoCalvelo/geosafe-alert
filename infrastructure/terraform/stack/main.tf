@@ -12,6 +12,12 @@ module "virtual_network" {
   location            = var.location
   resource_group_name = module.resource_group.name
 
+  private_endpoints_subnet_name = "snet-private-endpoints"
+
+  private_endpoints_subnet_address_prefixes = [
+    "10.0.4.0/24"
+  ]
+
   tags = local.common_tags
 }
 
@@ -58,6 +64,8 @@ module "key_vault" {
   mapbox_api_key                = var.keyvault.mapbox_api_key
   soft_delete_retention_days    = var.keyvault.soft_delete_days
   public_network_access_enabled = var.keyvault.public_access
+  secret_expiration_date        = var.keyvault.secret_expiration_date
+  allowed_ip_addresses          = var.keyvault.allowed_ip_addresses
 }
 
 module "backend_identity" {
@@ -105,7 +113,7 @@ module "postgres" {
 
   backup_retention_days        = var.postgres.backup_days
   sku_name                     = var.postgres.sku
-  geo_redundant_backup_enabled = true
+  geo_redundant_backup_enabled = false
 
   postgres_subnet_id = module.virtual_network.postgres_subnet_id
   virtual_network_id = module.virtual_network.id

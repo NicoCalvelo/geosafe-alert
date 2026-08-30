@@ -47,3 +47,13 @@ variable "postgres_subnet_address_prefixes" {
 variable "tags" {
   type = map(string)
 }
+
+variable "private_endpoints_subnet_name" {
+  description = "Nom du subnet dédié aux Private Endpoints"
+  type        = string
+}
+
+variable "private_endpoints_subnet_address_prefixes" {
+  description = "Plage d'adresses du subnet Private Endpoints"
+  type        = list(string)
+}

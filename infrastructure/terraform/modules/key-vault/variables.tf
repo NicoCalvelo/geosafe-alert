@@ -51,3 +51,9 @@ variable "secret_expiration_date" {
   description = "Expiration date for Key Vault secrets"
   type        = string
 }
+
+variable "allowed_ip_addresses" {
+  description = "Liste des adresses IP publiques autorisées à accéder au Key Vault"
+  type        = list(string)
+  default     = []
+}

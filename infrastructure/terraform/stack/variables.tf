@@ -90,22 +90,24 @@ variable "keyvault" {
   description = "Configuration du Key Vault."
 
   type = object({
-    app_key          = string
-    db_password      = string
-    mapbox_api_key   = string
-    soft_delete_days = number
-    public_access    = bool
-    secret_expiration_date = string
+    app_key                 = string
+    db_password             = string
+    mapbox_api_key          = string
+    soft_delete_days        = number
+    public_access           = bool
+    secret_expiration_date  = string
+    allowed_ip_addresses    = list(string)
   })
   sensitive = true
 
   default = {
-    app_key          = ""
-    db_password      = ""
-    mapbox_api_key   = ""
-    public_access    = true
-    soft_delete_days = 7
-    secret_expiration_date = "2027-01-01T00:00:00Z"
+    app_key                 = ""
+    db_password             = ""
+    mapbox_api_key          = ""
+    public_access           = true
+    soft_delete_days        = 7
+    secret_expiration_date  = "2027-01-01T00:00:00Z"
+    allowed_ip_addresses    = []
   }
 }
 
