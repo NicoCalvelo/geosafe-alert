@@ -1,4 +1,4 @@
-import { Component, OnInit, input, output, inject, computed, signal } from '@angular/core';
+import { Component, OnInit, input, output, inject, signal } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { AlertsService } from '../../../core/services/alerts.service';
 import { CesiumService } from '../../../core/services/cesium.service';
@@ -6,11 +6,10 @@ import { IndicesService } from '../../../core/services/indices.service';
 import { ZoneAlertsService } from '../../../core/services/zone-alerts.service';
 import { IndexType, ZoneAlert } from '../../../core/models/index.model';
 import { RouterLink } from '@angular/router';
-import { AlertCard } from '../alert-card/alert-card';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [AlertCard, RouterLink],
+  imports: [RouterLink],
   templateUrl: './sidebar.html',
 })
 export class Sidebar implements OnInit {
@@ -26,22 +25,8 @@ export class Sidebar implements OnInit {
   readonly user = this.auth.currentUser;
   readonly alertTypes = this.alerts.alertTypes;
   readonly activeFilters = this.alerts.activeFilters;
-  readonly selectedEntityId = computed(() => this.cesium.selectedEntity()?.id);
 
   myAlerts = signal<ZoneAlert[]>([]);
-
-  // Build alert list from Cesium entities
-  readonly entityList = computed(() => {
-    const entities = this.cesium.getEntities();
-    return entities
-      .filter((e) => e.id !== 'document')
-      .map((e) => ({
-        id: e.id,
-        name: e.name ?? 'Unknown',
-        label: '', // Will be enriched from CZML description
-        color: '#ffffff',
-      }));
-  });
 
   filtersChanged = output<void>();
   synced = output<void>();
@@ -81,10 +66,6 @@ export class Sidebar implements OnInit {
 
   isFilterActive(code: string): boolean {
     return this.activeFilters().includes(code);
-  }
-
-  onAlertClick(entityId: string): void {
-    this.cesium.flyToEntity(entityId);
   }
 
   onZoneAlertClick(alert: ZoneAlert): void {

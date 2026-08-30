@@ -78,9 +78,9 @@ function buildFootprint(alertCode: string, lon: number, lat: number): GeoJSON {
 
 // Vitesse et croissance approximatives par type d'aléa (degrés/heure et facteur de taille)
 const MOVEMENT_PROFILES: Record<string, { speed: number; growth: number }> = {
-  fire: { speed: 0.001, growth: 1.8 }, // se propage lentement, grossit beaucoup
-  flood: { speed: 0.005, growth: 1.5 }, // se propage en suivant un axe (ex: rivière), grossit
-  storm: { speed: 0.002, growth: 1.1 }, // se déplace vite, taille quasi stable
+  fire: { speed: 0.005, growth: 1.8 }, // se propage lentement, grossit beaucoup
+  flood: { speed: 0.01, growth: 1.5 }, // se propage en suivant un axe (ex: rivière), grossit
+  storm: { speed: 0.01, growth: 1.3 }, // se déplace vite, taille quasi stable
 }
 
 /**
