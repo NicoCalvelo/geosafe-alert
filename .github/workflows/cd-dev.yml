@@ -48,5 +48,87 @@ jobs:
           file: infrastructure/docker/backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ env.IMAGE_BACKEND }}:develop
-            ghcr.io/${{ env.IMAGE_BACKEND }}:dev-${{ github.run_number }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:develop
+            ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:dev-${{ github.run_number }}
+      
+      # ==========================================================
+      # DATABASE MIGRATION
+      # ==========================================================
+
+      - name: Start database migration
+        run: |
+          echo "Starting database migration..."
+
+          az containerapp job start \
+            --name ${{ env.MIGRATION_JOB }} \
+            --resource-group ${{ env.RESOURCE_GROUP }}
+
+
+      # ----------------------------------------------------------
+      # WAIT FOR MIGRATION
+      # ----------------------------------------------------------
+
+      - name: Wait for database migration
+        shell: bash
+        run: |
+
+          echo "Waiting for migration job..."
+
+          for i in {1..30}; do
+
+            echo "Checking migration status... ($i/30)"
+
+            STATUS=$(az containerapp job execution list \
+              --name ${{ env.MIGRATION_JOB }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --query "[0].properties.status" \
+              --output tsv)
+
+            echo "Current status: $STATUS"
+
+            case "$STATUS" in
+
+              Succeeded)
+                echo "Database migration succeeded."
+                exit 0
+                ;;
+
+              Failed)
+                echo "Database migration failed."
+                exit 1
+                ;;
+
+              Running|Pending|Stopped)
+                echo "Migration still running..."
+                ;;
+
+              *)
+                echo "Migration status not yet available..."
+                ;;
+
+            esac
+
+            sleep 10
+
+          done
+
+          echo "Migration timeout."
+          exit 1
+
+      # ----------------------------------------------------------
+      # DEPLOIMENT
+      # ----------------------------------------------------------
+
+      - name: Deploy Frontend
+        run: |
+          az containerapp update \
+            --name ca-frontend-geosafe-dev \
+            --resource-group rg-geosafe-dev \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:dev-${{ github.run_number }}
+
+      - name: Deploy Backend
+        run: |
+          az containerapp update \
+            --name ca-backend-geosafe-dev \
+            --resource-group rg-geosafe-dev \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:dev-${{ github.run_number }}

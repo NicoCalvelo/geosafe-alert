@@ -25,7 +25,9 @@ export default class extends BaseSchema {
       )
     `)
 
-    await this.db.rawQuery(`CREATE INDEX idx_index_zones_geom_gist ON index_zones USING GIST (geom)`)
+    await this.db.rawQuery(
+      `CREATE INDEX idx_index_zones_geom_gist ON index_zones USING GIST (geom)`
+    )
 
     // ── index_values (valeur d'un indice pour une zone) ──────
     await this.db.rawQuery(`
@@ -40,7 +42,9 @@ export default class extends BaseSchema {
       )
     `)
 
-    await this.db.rawQuery(`CREATE INDEX idx_index_values_index_type ON index_values (index_type_id)`)
+    await this.db.rawQuery(
+      `CREATE INDEX idx_index_values_index_type ON index_values (index_type_id)`
+    )
   }
 
   async down() {

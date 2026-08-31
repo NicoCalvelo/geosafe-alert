@@ -31,7 +31,6 @@ export class AlertsService {
       );
 
       this.alertTypes.set(types);
-      this.activeFilters.set(types.map((type) => type.code));
     } catch (err) {
       console.error('Failed to load alert types, using fallback list:', err);
       this.alertTypes.set(ALERT_TYPES);
